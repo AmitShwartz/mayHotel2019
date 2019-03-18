@@ -1,0 +1,35 @@
+vouchers_types: 
+	{
+		id: 30
+		hotel: 1
+		name: הזמנת ארוחה חינם משירות חדרים,
+		tag: [1]
+	},	
+	{
+		id: 31
+		hotel: 1
+		name: הזמנת ארוחה חינם מהבר בבריכה		
+		tag:[1]
+	},
+	{
+		id: 32
+		hotel: 1
+		name: שני קוקטיילים חינם בבר המשקאות		
+		tag:[1]
+	},
+	{
+		id: 32
+		hotel: 1
+		name: שני קוקטיילים חינם בבר המשקאות		
+		tag:[1]
+	}
+
+
+vouchers:
+	{
+		id: 389572
+		user_id:	
+		voucher_id: 31
+		isUsed: false
+	}
+

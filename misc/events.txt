@@ -1,0 +1,75 @@
+types: 	1-חוגים, 
+	2-אירועים
+	3-אוכל ושתיה
+	4-הקרנת סרטים
+	5-שונות
+
+population:
+	1-ילדים
+	2-פעוטות
+	3-מבוגרים
+activities:
+
+{
+	id: 1
+	name: 'זומבה'
+	type: 1,
+	pop: [3],
+	sits: 50
+},
+{
+	id: 2
+	name: 'שובו של הג'דיי'
+	type: 4,
+	pop: null,
+	sits: 4
+},
+
+
+schedule:
+	{
+	id: ______
+	activity_id: {
+			id: 1
+			name: 'זומבה'
+			type: 1,
+			pop: [3],
+			sits: 50
+	}
+	date: 22/11/18
+	startAt: 8:00
+	endAt: 10:00
+	signed: [2,7,33,22]
+	},
+	{
+	id: 8a8a
+	activity_id: 2
+	date: 22/11/18
+	startAt: 22:00
+	endAt: 00:30
+	signed: [3,77,88,305,804]
+	},
+	{
+	id: 9b9b
+	activity_id: 2
+	date: 22/11/18
+	startAt: 16:00
+	endAt: 18:30
+	signed: [3,77,88,305]
+	},
+
+
+
+getSchedule/:date
+
+זומבה - 8:00-10:00
+
+הקרנת סרט - שובו של הג'דיי - 18:00-20:30
+
+הקרנת סרט - שובו של הג'דיי - 20:00-22:00
+
+/signToActivity
+	{activity_id: 8a8a, room_id: 804}
+
+
+<-- 27/3/77 -->

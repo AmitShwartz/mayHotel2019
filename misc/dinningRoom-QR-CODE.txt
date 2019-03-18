@@ -1,0 +1,36 @@
+17/5/2018 8:00 - 10:00
+total_tables: 10
+curr_orders:  10
+
+
+
+/dinningRoom/openGate
+{user_id, whichMeal:} 
+
+if before 8:30:
+	orderedUser:
+		gate will open!
+		{userArrive: true, userLeft: false}
+
+	not ordered user:
+		if not enough orders (there is available table):  
+			get will open
+			add orderTable{
+				user_id: 7
+				table_id: return new tableID
+				when: 13/11/18
+				whichMeal:  1,
+				isArrived: true,
+				isLeft: false
+			}
+		if orders are full:
+			get will not open!
+
+after 8:30:
+	delete {spontanic: false, isArrived: false} 
+	
+	
+
+		
+	
+	
