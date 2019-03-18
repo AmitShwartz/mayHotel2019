@@ -9,18 +9,19 @@ exports.register = ({id, firstname, lastname, phone, address}) => {
    
     let newUser = new User({
       _id: id,
-      firstname, lastname, phone, address
+      firstname, lastname, phone, address,
+    
     });
-    QRCode.toDataURL(id, function (err, url) {
+    newUser.QRcode = QRCode.toDataURL(id, function (err, url) {
       if(err) reject(err);
-      newUser.QRcode = url;
+      return url;
     });
 
     newUser.save((err, user) => {
       if (err) reject(err.message);
       resolve(user);
     });
-  });
+  })
 }
 
 exports.getUserByID = ({id}) => {
