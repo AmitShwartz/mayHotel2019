@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "index.js"
   },
-  "author": "Maya & Yehudit",
+  "author": "Maya & Yehudit & Amit",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.3",
