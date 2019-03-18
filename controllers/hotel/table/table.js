@@ -1,5 +1,5 @@
 const Hotel = require('../../../schemas/hotel');
-const Table = require('../../../schemas/Table');
+const Table = require('../../../schemas/table');
 const _ = require('lodash');
 
 exports.addTable = (req) => { // PUT  /hotel/table
