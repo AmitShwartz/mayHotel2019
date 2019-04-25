@@ -52,7 +52,7 @@ exports.addMissing = ({room_id, item, quantity}) => {
 exports.completeMissing = ({call_id}) => {
   return new Promise((resolve, reject) => {
     if(!call_id) return reject('call_id param is missing');
-
+    console.log(call_id)
     Room.findOneAndUpdate({'room_service.missing_items':{$elemMatch:{_id:call_id}}},
       {$pull:{'room_service.missing_items':{eq:{id:call_id}}}},
       (err, call)=>{
