@@ -8,23 +8,23 @@ const Table   =   require('../../../../schemas/table');
 
 exports.addOrder = async ({meal, user, date, sits}) => {
   return new Promise((resolve, reject) => {
-    const at    =   DATE_INT(new Date(date));
-    const today =   DATE_INT(new Date());
-
     if(!meal || !user || !date || !sits)
       reject('user || meal || date || sits params are missing');
+
+    const at    =   DATE_INT(new Date(date));
+    const today =   DATE_INT(new Date());
     if(at < today)
       reject('date illegal. already passed');
 
     Meal.findById(meal).exec((err, meal) => { //check if meal exists
       if(err)   return reject(err.message);
-      if(!meal) return reject('meal not exists');
+      else if(!meal) return reject('meal not exists');
       const hotel = meal.hotel;
 
       Table.find({hotel, orders: {$elemMatch: {meal,user,at}}})
        .exec((err, tables) =>{ //check if user not already ordered table for that meal
         if(err)     return reject(err.message);
-        if(tables.length>0)  return reject('user already ordered table for that meal');
+        else if(tables.length>0)  return reject('user already ordered table for that meal');
 
         Table.find({ //find available table for that meal
           hotel,
@@ -39,7 +39,8 @@ exports.addOrder = async ({meal, user, date, sits}) => {
           sits: {$gte: sits}
         }).sort('sits').exec((err, tables) => {
           if(err) return reject(err.message);
-          if(!tables || tables.length===0) return reject('table not available for that meal');
+          //static function add user to coupon list
+          else if(!tables || tables.length===0) return reject('table not available for that meal.');
 
           let newOrder = {user, meal, at};
           let availableTable = tables[0];
@@ -57,7 +58,7 @@ exports.addOrder = async ({meal, user, date, sits}) => {
     })
   }); //promise end
 };
-
+ 
 exports.deleteOrder = async ({order_id}) => {
   return new Promise((resolve, reject) => {
     Table.findOne({'orders._id': order_id}).exec((err,table) => {

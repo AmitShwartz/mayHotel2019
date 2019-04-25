@@ -2,19 +2,19 @@ const User = require('../../schemas/user');
 const QRCode  = require('qrcode');
 const _ = require('lodash');
 
-exports.register = ({id, firstname, lastname, phone, address}) => {
+exports.register = async ({user_id, firstname, lastname, phone, address}) => {
   return new Promise((resolve, reject) => {
-    if(!id || !firstname || !lastname || !phone || !address)
-      reject('id || firstname || lastname || phone || address params are missing');
+    if(!user_id || !firstname || !lastname || !phone || !address)
+      reject('user_id || firstname || lastname || phone || address params are missing');
    
     let newUser = new User({
-      _id: id,
-      firstname, lastname, phone, address,
-    
+      _id: user_id,
+      firstname, lastname, phone, address, 
     });
-    newUser.QRcode = QRCode.toDataURL(id, function (err, url) {
+    
+    QRCode.toDataURL(user_id, function (err, url) {
       if(err) reject(err);
-      return url;
+      newUser.QRcode = url;
     });
 
     newUser.save((err, user) => {
@@ -24,16 +24,24 @@ exports.register = ({id, firstname, lastname, phone, address}) => {
   })
 }
 
-exports.getUserByID = ({id}) => {
+exports.getUserByID = ({user_id}) => {
   return new Promise((resolve, reject) => {
-    if(!id) reject('id param is missing')
-    User.findById(id, (err, user)=>{
+    if(!user_id) reject('user_id param is missing')
+    User.findById(user_id, (err, user)=>{
       if(err) reject(err);
       resolve(user);
     });
   });
 }
-//continue
-exports.edit = (req) => {
 
+//continue
+exports.edit = async (body) => {
+  return new Promise((resolve, reject) => {
+    if(!body.user_id) reject('user_id param is missing')
+    toUpdate = _.pick(body,['phone' , 'address'])
+    User.findByIdAndUpdate(body.user_id, toUpdate, (err, user)=>{
+      if(err) reject(err);
+      resolve(`User (id: ${user._id}) updated.`);
+    });
+  });
 }

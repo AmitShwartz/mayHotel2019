@@ -78,11 +78,9 @@ const TherepistSchema = new Schema({
 },{collection: 'therepists'});
 
 TherepistSchema.pre('save', function(next){
-  Hotel.findById(this.hotel).exec((err, hotel) => {
+  Hotel.findById(this.hotel, (err, hotel) => {
     if(err) next(err);
-    if(!hotel) next(new Error("hotel_id not exists"));
-
-    if(!hotel) next(new Error("hotel_id not exists"));
+    else if(!hotel) next(new Error("hotel_id not exists"));
     this.schedule.int.startTime  = TIME_INT(this.schedule.startTime);
     this.schedule.int.endTime    = TIME_INT(this.schedule.endTime);
     next();

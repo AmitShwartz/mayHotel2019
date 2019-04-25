@@ -21,14 +21,13 @@ router.delete('/appointment', async (req, res) => {
 });
 
 router.post('/', (req,res) => {
-  ctrl.getAllTherepists(req)
+  ctrl.getAllTherepists(req.body)
   .then(therepists => resSuccess(res, therepists))
   .catch(err => resError(res, err));
 });
 
 router.delete('/', async (req, res) => {
-  ctrl.findAndCheck(req.body)
-  .then(id => ctrl.removeTherepist(id))
+  ctrl.removeTherepist(req.body)
   .then(therepist => resSuccess(res, therepist))
   .catch(e => resError(res, e));
 });

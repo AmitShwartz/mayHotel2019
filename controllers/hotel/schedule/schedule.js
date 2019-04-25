@@ -1,78 +1,189 @@
 const Hotel = require('../../../schemas/hotel');
+const Schedule = require('../../../schemas/schedule');
+const User = require('../../../schemas/user');
 const _ = require('lodash');
 
-exports.getScehduleByDay = (req) => { // GET /hotel/schedule/:hotel_id/:day
-  return new Promise((resolve, reject) => {
-    let {hotel_id, day} = req.params;
-    if(!hotel_id || !day) reject('hotel_id || day params are missing');
+exports.addSchedule =({date, hotel_id}) => new Promise(async (resolve, reject) => {
+  if(!date || !hotel_id) return reject('date || hotel_id param is missing');
 
-    Hotel.findById(hotel_id).select("schedule").exec((err, hotel) => {
-      if(!hotel) return reject("hotel_id not exists");
-      let schedule = _.orderBy(hotel.schedule.filter(s => s.day==day), ['time'], ['asc']);
-      resolve(schedule);
+  let newDate = new Date(date);
+  let now = new Date();
+  if(now > newDate) return reject(`The date ${date} has already passed`);
+  newDate.setTime(newDate.getTime() + newDate.getTimezoneOffset() * 60 * 1000  + (/* UTC+8 */ 2) * 60 * 60 * 1000);
+  newDate.setDate(newDate.getDate()+1)
+
+  await Hotel.findById(hotel_id, async (err, hotel) =>{
+    if(err) return reject(err.message);
+    else if(!hotel) return reject(`hotel_id ${hotel_id} not exists`);
+    let newSchedule = new Schedule({
+      hotel: hotel_id,
+      date: newDate
+    });
+    newSchedule.save((err,schedule) => {
+      if (err) return reject(err.message);
+      return resolve(schedule);
+    });
+  })
+});
+
+exports.addEventSchedule = ({hotel, date, name, category, content, location, capacity, time}) => {
+  return new Promise(async (resolve, reject) =>{
+    if(!(hotel && date && name && category && content && location && capacity && time)) return reject('params miissing');
+    date = new Date(date);
+    date.setTime(date.getTime() + date.getTimezoneOffset() * 60 * 1000  + (/* UTC+8 */ 2) * 60 * 60 * 1000);
+    date.setDate(date.getDate()+1);
+
+    await Schedule.findOne({hotel,date}, (err,check)=>{
+      if(err) return reject(err.message);
+      else if(!check) return reject('hotel || hotel date not exist');
+    });
+    await Schedule.findOne({hotel, date, events:{$not:{$elemMatch:{name,time}}}}, async (err, schedule) =>{
+      if(err) return reject(err.message);
+      else if(!schedule) return reject('event has already been assigned') 
+      let reservations = new Array();
+      const reservation = {user_id: null, occupeid: false};  
+      for (let i = 0; i < capacity; i++) {
+        reservations.push(reservation); 
+      }
+      console.log(reservations.length)
+      schedule.events.push({name, category, content, location, capacity, time, reservations});
+
+      schedule.save((err,schedule) => {
+        if (err) return reject(err.message);
+        return resolve(schedule.events);
+      });
     });
   });
 }
 
-exports.addScheduleItem = (req) => {
-  return new Promise((resolve, reject) => {
-    let {hotel_id} = req.body;
-    let schedule = _.pick(req.body, ['day', 'time', 'desc']);
-
-    Hotel.findById(hotel_id).exec((err, hotel) => {
-      if(!hotel) return reject(`hotel_id ${hotel_id} not exists`);
-
-      hotel.schedule.push(schedule);
-      hotel.save((err, hotel) => {
-        if(err) return reject(err.message);
-        resolve(hotel);
+exports.addSpaSchedule = ({hotel, date, therepist}) => {
+  return new Promise(async (resolve, reject) =>{
+    if(!therepist||!hotel||!date) reject('hotel||date||therepist params are missing');
+    date = new Date(date);
+    date.setTime(date.getTime() + date.getTimezoneOffset() * 60 * 1000  + (/* UTC+8 */ 2) * 60 * 60 * 1000);
+    date.setDate(date.getDate()+1);
+    console.log(date)
+    await Schedule.findOne({hotel,date}, (err,check)=>{
+      if(err) return reject(err.message);
+      else if(!check) return reject('hotel || hotel date not exist');
+    });
+    await Schedule.findOne({hotel, date, spa:{$not:{$elemMatch:{therepist}}}}, async (err, schedule) =>{
+      console.log(schedule)
+      if(err) return reject(err.message);
+      else if(!schedule) return reject('therapist has already been assigned')
+      for (let i = 8; i < 19; i++) {
+        if(i==12) continue;
+        let time = `${i}:00`;
+        let newSpa = {therepist,time} ;
+        schedule.spa.push(newSpa);
+      }
+      schedule.save((err,schedule) => {
+        if (err) return reject(err.message);
+        return resolve(schedule.spa);
       });
     });
   });
-};
+}
 
-exports.editSchedule = (req) => { // PATCH /hotel/schedule
-  return new Promise((resolve, reject) => {
-    let {hotel_id, schedule_id, day, time, desc} = req.body;
-    if(!hotel_id || !schedule_id || !day || !time || !desc) reject('hotel_id || schedule_id || day || time || desc params are missing');
+exports.getScheduleByHotel = ({hotel}) => {
+  return new Promise(async (resolve, reject) => {
+    if(!hotel) reject('hotel param is missing');
+    Schedule.find({hotel}, (err, schedule) => {
+      console.log(schedule)
+      if(err) return reject(err.message);
+      else if(!schedule) return reject("no schedule for this hotel");
+      return resolve(schedule);
+    }).sort({date:1});
+  })
+}
 
-    Hotel.update({'schedule._id': schedule_id}, { '$set': {
-      'schedule.$.day': day,
-      'schedule.$.time': time,
-      'schedule.$.desc': desc
-    }}).exec((err, hotel) => {
-      if(err) reject(err.message);
-      if(!hotel) reject("hotel_id not exists");
-      resolve(hotel);
+exports.deletePast = () =>{
+  return new Promise ((resolve,reject) =>{
+    let now = new Date();
+    Schedule.deleteMany({date:{ $lt: now }},(err, deleted) =>{
+      if(err) return reject(err.message);
+      return resolve(deleted);
+    })
+  })
+}
+
+exports.getSpaAvailable = ({hotel})=>{
+  return new Promise(async (resolve,reject)=>{
+    if(!hotel)return reject('hotel param is missing');
+    let now = new Date();
+    await Schedule.find({hotel, date:{ $gte: now }}, async (err,schedule)=>{
+      console.log(schedule)
+      if(err) return reject(err.message);
+      else if(!schedule||schedule.length == 0) return reject("no such schedule exist");
+      await schedule.map(day =>{
+        day.spa = _.filter(day.spa, spa => spa.status === false);
+        day.spa = _.sortBy(day.spa,'int.time');
+      })
+      
+      return resolve(schedule);
+    }).sort({date:1});
+  })
+}
+
+exports.getSpaAvailableByDate = ({hotel, date})=>{
+  return new Promise(async (resolve,reject)=>{
+    if(!hotel||!date)return reject('hotel || date params are missing');
+    date = new Date(date);
+    date.setTime(date.getTime() + date.getTimezoneOffset() * 60 * 1000  + (/* UTC+8 */ 2) * 60 * 60 * 1000);
+    date.setDate(date.getDate()+1);
+
+    await Schedule.findOne({hotel, date}, async (err,schedule)=>{
+      if(err) return reject(err.message);
+      else if(!schedule) return reject("no such schedule exist");
+      schedule.spa = _.filter(schedule.spa, spa => spa.status === false);
+      schedule.spa = _.sortBy(schedule.spa,'int.time');
+      return resolve(schedule);
     });
   })
 }
 
-exports.deleteSchedule = (req) => {
-  return new Promise((resolve, reject) => {
-    let {hotel_id, schedule_id} = req.body;
-    if(!hotel_id || !schedule_id) reject('hotel_id || schedule_id params are missing');
-    Hotel.update(
-      { _id: hotel_id },
-      { $pull: {'schedule': { _id: schedule_id }}}
-    ).exec((err, stats) => {
-      if(err) reject(err.message);
-      if(stats.nModified==0) reject("schedule_id not exists in hotel");
-      resolve(stats);
-    });
-  });
-};
+exports.addAppointment = ({appointment_id, user_id, treatment})=>{
+  return new Promise(async (resolve,reject)=>{
+    if(!(appointment_id && user_id && treatment)) return reject('appointment_id || user_id || treatment params are missing')
 
-exports.getSchedule = (req) => { // GET /hotel/schedule/me/:hotel_id/:schedule_id
-  return new Promise((resolve, reject) => {
-    let {hotel_id, schedule_id} = req.params;
-    if(!hotel_id || !schedule_id) reject('hotel_id || schedule_id params are missing');
+    await User.findById(user_id, (err,user) =>{
+      if(err) return reject(err.message);
+      else if(!user) return reject(`user with id ${user_id} not exist.`)
+    }); 
+    await Schedule.findOneAndUpdate({spa:{$elemMatch:{_id:appointment_id,status: false}}},
+    {$set:{"spa.$.status": true, "spa.$.user": user_id, "spa.$.treatment": treatment }},
+    (err, schedule)=>{
+      if(err) return reject(err.message);
+      else if(!schedule) return reject("no such schedule exist");
+      let appointment = _.filter(schedule.spa, spa => spa.id == appointment_id)
+      return resolve({appointment_id: appointment[0].id,
+                      date: schedule.date,
+                      time: appointment[0].time,
+                      therepist: appointment[0].therepist,
+                      treatment: treatment});
+    })
+  })
+}
 
-    Hotel.findById(hotel_id).exec((err, hotel) => {
-      if(err) reject(err.message);
-      var schedule = _.find(hotel.schedule, (o) => o._id==schedule_id);
-      if(!schedule) reject("schedule_id not found");
-      resolve(schedule);
+exports.cancelAppointment = ({appointment_id})=>{
+  return new Promise(async (resolve,reject)=>{
+  await Schedule.findOneAndUpdate({spa:{$elemMatch:{_id:appointment_id, status: true}}},
+   {$set:{"spa.$.status": false, "spa.$.user": null, "spa.$.treatment": null }},
+   (err, schedule)=>{
+    if(err) return reject(err.message);
+    else if(!schedule) return reject("no such schedule exist");
+    let appointment = _.filter(schedule.spa, spa => spa.id == appointment_id)
+    return resolve({appointment_id: appointment[0].id});
+   })
+  })
+}
+
+exports.deleteSchedule = ({schedule_id}) => {
+  return new Promise((resolve, reject) => {
+    if(!schedule_id) reject('schedule_id param is missing');
+    Schedule.findByIdAndDelete(schedule_id, (err, res) =>{
+      if(err) return reject(err.message);
+      return resolve(res);
     })
   });
 };

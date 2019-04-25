@@ -14,9 +14,27 @@ exports.addTable = (req) => { // PUT  /hotel/table
   });
 }
 
-exports.getTable = (req) => { // GET /hotel/table/:table_id
+exports.getAllTables = ({hotel_id}) => {
   return new Promise((resolve, reject) => {
-    let {table_id} = req.params;
+    if(!hotel_id) return reject('hotel_id param is missing');
+
+    Hotel.findById(hotel_id).exec((err, hotel) => {
+        if(err) return reject(err.message);
+        else if(!hotel) return reject(`hotel: ${hotel_id} not exists`);
+
+        Table.find({
+          hotel: hotel_id
+        }).select(`number sits`).sort('number').exec((err, tables) => {
+          if(err) return reject(err.message);
+
+          resolve(tables);
+        });
+    });
+  });
+}
+
+exports.getTable = ({table_id}) => { // GET /hotel/table/:table_id
+  return new Promise((resolve, reject) => {
     if(!table_id) reject('table_id param is missing');
 
     Table.findById(table_id).exec((err, table) => {

@@ -8,8 +8,8 @@ var RoomSchema = new Schema({
     number:   {type:Number, required: true},
     user:     {type: String , ref : 'User', default: null},
     room_service: {
-      missing_items: [{item: String, quantity: Number}],
-      maintenance: [String],
+      missing_items: [{item: String, quantity: Number, date: {type: Date, default: new Date()}}],
+      maintenance: [{desc: String, date: {type: Date, default: new Date()}}],
       isCleanable: {type:Boolean, default: true},
       alarmClock: {type:Date, default: null}
     }
@@ -35,7 +35,7 @@ RoomSchema.statics.checkIn = function(room_id, user_id){
   return new Promise((resolve, reject) => {
     Room.findById(room_id).then((room) => {
       if(!room) reject(new Error(`room_id: ${room_id} not exists`));
-      if(room.user) reject(new Error(`room: ${room_id} already occupied by user ${user_id}`));
+      else if(room.user) reject(new Error(`room: ${room_id} already occupied by user ${user_id}`));
       room.user = user_id;
       room.save((e, room) => {
         if(e) reject(new Error(e.message));
