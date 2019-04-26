@@ -176,7 +176,7 @@ exports.addClean = ({room_id, date, time}) => {
     let timeArr = time.split(':');
     datetime.setHours(timeArr[0], timeArr[1]);
 
-    Room.findOneAndUpdate({_id: room_id}, {'room_service.clean.date': datetime}, {new: true}).exec((err, room) => {
+    Room.findOneAndUpdate({_id: room_id}, {'room_service.clean.date': datetime, 'room_service.clean.is_handle': false}, {new: true}).exec((err, room) => {
       if(err) return reject(err.message);
       else if(!room) return reject(`room ${room_id} is not exists`);
       resolve(room);
