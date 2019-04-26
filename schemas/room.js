@@ -8,11 +8,26 @@ var RoomSchema = new Schema({
     number:   {type:Number, required: true},
     user:     {type: String , ref : 'User', default: null},
     room_service: {
-      missing_items: [{item: String, quantity: Number, date: {type: Date, default: new Date()}}],
-      maintenance: [{desc: String, date: {type: Date, default: new Date()}}],
-      isCleanable: {type:Boolean, default: true},
+      missing_items: [{
+        item: String,
+        quantity: Number,
+        is_handle: {type:Boolean, default: false},
+        date: {type: Date, default: new Date()}
+      }],
+      maintenance: [{
+        desc: String,
+        is_handle: {type:Boolean, default: false},
+        date: {type: Date, default: new Date()}
+      }],
+      clean: {
+        date: Date,
+        is_handle: {type:Boolean, default: false}
+      },
+      //isCleanable: {type:Boolean, default: true},
       alarmClock: {type:Date, default: null}
-    }
+    },
+    startdate: {type: Date, default: null},
+    enddate: {type: Date, default: null}
   },{collection: 'rooms'});
 
 RoomSchema.index({ number: 1, hotel: 1}, { unique: true }); //(hotel, number) = unique key

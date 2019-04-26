@@ -85,18 +85,22 @@ exports.addRooms = ({hotel_id, min, max, exc}) => {
   });
 }
 
-exports.checkIn = ({room_id, user_id}) => {
+exports.checkIn = ({room_id, user_id, num_of_days}) => {
   return new Promise(async (resolve, reject) => {
-    if(!room_id || !user_id) reject('room_id || user_id params are missing');
+    if(!room_id || !user_id || !num_of_days) reject('num_of_days || room_id || user_id params are missing');
+    else if(num_of_days<0) reject('num_of_days param is illigle');
     await User.findById(user_id, async (err, user) => {
       if(err) return reject(err.message);
       else if(!user) return reject(`user ${user_id} not exists`);
 
-      await Room.findById(room_id, (err, room) => {
+      await Room.findById(room_id, async (err, room) => {
         if(err) return reject(err.message);
         else if(!room) return reject(`room ${room_id} not exists`);
         else if(room.user != null) return reject(`room ${room_id} already occupied`);
         room.user = user_id;
+        room.startdate = new Date();
+        room.enddate = new Date();
+        room.enddate.setDate(room.enddate.getDate() + Number(num_of_days));
         room.save((err, room) => {
           if(err) return reject(err.message);
           user.room = room_id;

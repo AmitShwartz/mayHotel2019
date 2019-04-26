@@ -27,7 +27,7 @@ exports.register = async ({user_id, firstname, lastname, phone, address}) => {
 exports.getUserByID = ({user_id}) => {
   return new Promise((resolve, reject) => {
     if(!user_id) reject('user_id param is missing')
-    User.findById(user_id, (err, user)=>{
+    User.findById(user_id ).populate('room').exec((err, user)=>{
       if(err) reject(err);
       resolve(user);
     });

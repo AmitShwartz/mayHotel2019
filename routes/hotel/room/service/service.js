@@ -3,22 +3,36 @@ const {resError, resSuccess} = require("../../../../consts");
 
 const ctrl = require('../../../../controllers/hotel/room/service/service');
 
-router.put('/missing', (req,res) => {
+router.post('/missing', (req,res) => {
   ctrl.addMissing(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
 });
+
+router.put('/missing', (req,res) => {
+  ctrl.handleMissing(req.body)
+  .then((room) => resSuccess(res, room))
+  .catch(err => resError(res, err));
+});
+
 router.delete('/missing', (req,res) => {
   ctrl.completeMissing(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
 });
 
-router.put('/maintenance', (req,res) => {
+router.post('/maintenance', (req,res) => {
   ctrl.addMaintenance(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
 });
+
+router.put('/maintenance', (req,res) => {
+  ctrl.handleMaintenance(req.body)
+  .then((room) => resSuccess(res, room))
+  .catch(err => resError(res, err));
+});
+
 router.delete('/maintenance', (req,res) => {
   ctrl.completeMaintenance(req.body)
   .then((room) => resSuccess(res, room))
@@ -36,8 +50,14 @@ router.delete('/alarm', (req,res) => {
   .catch(err => resError(res, err));
 });
 
+router.post('/clean', (req,res) => {
+  ctrl.addClean(req.body)
+  .then((room) => resSuccess(res, room))
+  .catch(err => resError(res, err));
+});
+
 router.put('/clean', (req,res) => {
-  ctrl.setCleanable(req.body)
+  ctrl.handleClean(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
 });
