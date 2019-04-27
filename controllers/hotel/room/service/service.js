@@ -68,18 +68,6 @@ exports.addMissing = ({room_id, items}) => {
   });
 }
 
-// exports.addMissing = ({room_id, item, quantity}) => {
-//   return new Promise((resolve, reject) => {
-//     if(!room_id || !item || !quantity) return reject('room_id || item || quantity params are missing');
-//     const newMissing = {item,quantity};
-//     Room.findOneAndUpdate({_id: room_id}, {$push: {'room_service.missing_items': newMissing} }, {new: true}).exec((err, room) => {
-//       if(err) return reject(err.message);
-//       else if(!room) return reject(`room ${room_id} is not exists`);
-//       resolve(room);
-//     });
-//   });
-// }
-
 exports.handleMissing = ({call_id}) => {
   return new Promise((resolve, reject) => {
     if(!call_id) return reject('call_id param is missing');
@@ -151,18 +139,12 @@ exports.completeMaintenance = ({call_id}) => {
   });
 }
 
-exports.addAlarmClock = ({room_id, date, time}) => {
-  return new Promise((resolve, reject) => {
-    if(!room_id || !time || !date) return reject('room_id || date || time params are missing');
-   
-    const regexTime = RegExp('^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
-    if(!Date.parse(date)) return reject("date param is illegal");
-    else if(!regexTime.test(time)) return reject("time param is illegal. HH:MM format only");
-
+exports.addAlarmClock = ({room_id, date}) => {
+  return new Promise(async (resolve, reject) => {
+    if(!room_id || !date) return reject('room_id || date params are missing');
+    let now = new Date();
     let datetime = new Date(date); 
-    let timeArr = time.split(':');
-    datetime.setHours(timeArr[0], timeArr[1]);
-
+    if(now > datetime) return reject(`The date ${date} already passed`);
     Room.findOneAndUpdate({_id: room_id}, {'room_service.alarmClock': datetime}, {new: true}).exec((err, room) => {
       if(err) return reject(err.message);
       else if(!room) return reject(`room ${room_id} is not exists`);
@@ -182,19 +164,13 @@ exports.completeAlarmClock = ({room_id}) => {
   });
 }
 
-exports.addClean = ({room_id, date, time}) => {
+exports.addClean = ({room_id, date}) => {
   return new Promise((resolve, reject) => {
-    if(!room_id || !time || !date) return reject('room_id || date || time params are missing');
+    if(!room_id || !date) return reject('room_id || date params are missing');
     
-    const regexTime = RegExp('^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
-    if(!Date.parse(date)) return reject("date param is illegal");
-    else if(!regexTime.test(time)) return reject("time param is illegal. HH:MM format only");
-
     let datetime = new Date(date); 
-    let timeArr = time.split(':');
-    datetime.setHours(timeArr[0], timeArr[1]);
-
-    Room.findOneAndUpdate({_id: room_id}, {'room_service.clean.date': datetime, 'room_service.clean.is_handle': false}, {new: true}).exec((err, room) => {
+    Room.findOneAndUpdate({_id: room_id}, 
+      {'room_service.clean.date': datetime, 'room_service.clean.is_handle': false}, {new: true}).exec((err, room) => {
       if(err) return reject(err.message);
       else if(!room) return reject(`room ${room_id} is not exists`);
       resolve(room);
@@ -212,5 +188,16 @@ exports.handleClean = ({room_id}) => {
        else if(!call) return reject("no such call exist");
        return resolve(call);
       })
+  });
+}
+
+exports.completeClean = ({room_id}) => {
+  return new Promise((resolve, reject) => {
+    if(!room_id) return reject('room_id param is missing');
+    Room.findOneAndUpdate({_id: room_id}, {'room_service.clean.date': null}, {new: true}).exec((err, room) => {
+      if(err) return reject(err.message);
+      else if(!room) return reject(`room ${room_id} is not exists`);
+      resolve(room);
+    });
   });
 }

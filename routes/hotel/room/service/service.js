@@ -39,7 +39,7 @@ router.delete('/maintenance', (req,res) => {
   .catch(err => resError(res, err));
 });
 
-router.put('/alarm', (req,res) => {
+router.post('/alarm', (req,res) => {
   ctrl.addAlarmClock(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
@@ -58,6 +58,12 @@ router.post('/clean', (req,res) => {
 
 router.put('/clean', (req,res) => {
   ctrl.handleClean(req.body)
+  .then((room) => resSuccess(res, room))
+  .catch(err => resError(res, err));
+});
+
+router.delete('/clean', (req,res) => {
+  ctrl.completeClean(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
 });
