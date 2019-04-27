@@ -145,6 +145,7 @@ exports.addAlarmClock = ({room_id, date}) => {
     let now = new Date();
     let datetime = new Date(date); 
     if(now > datetime) return reject(`The date ${date} already passed`);
+
     Room.findOneAndUpdate({_id: room_id}, {'room_service.alarmClock': datetime}, {new: true}).exec((err, room) => {
       if(err) return reject(err.message);
       else if(!room) return reject(`room ${room_id} is not exists`);
@@ -167,8 +168,10 @@ exports.completeAlarmClock = ({room_id}) => {
 exports.addClean = ({room_id, date}) => {
   return new Promise((resolve, reject) => {
     if(!room_id || !date) return reject('room_id || date params are missing');
-    
+    let now = new Date();
     let datetime = new Date(date); 
+    if(now > datetime) return reject(`The date ${date} already passed`);
+    
     Room.findOneAndUpdate({_id: room_id}, 
       {'room_service.clean.date': datetime, 'room_service.clean.is_handle': false}, {new: true}).exec((err, room) => {
       if(err) return reject(err.message);
