@@ -9,15 +9,14 @@ exports.getOpenCalls = ({hotel_id}) => {
       else if(!rooms || rooms.length == 0) return reject(`Hotel ${hotel_id} has no rooms `);
       let calls = [];
       await rooms.map(async (room) =>{
-        room.room_service.missing_items.map(item =>{
+        room.room_service.missing.map(missing =>{
           let call = {
-            id: item.id,
+            id: missing.id,
             room_num: room.number,
             type: 'missing',
-            is_handle: item.is_handle,
-            date: item.date,
-            item: item.item,
-            quantity: item.quantity
+            is_handle: missing.is_handle,
+            date: missing.date,
+            items: missing.items
           }
           calls.push(call);
         });
@@ -50,24 +49,43 @@ exports.getOpenCalls = ({hotel_id}) => {
   });
 }
 
-exports.addMissing = ({room_id, item, quantity}) => {
+exports.addMissing = ({room_id, items}) => {
   return new Promise((resolve, reject) => {
-    if(!room_id || !item || !quantity) return reject('room_id || item || quantity params are missing');
-    const newMissing = {item,quantity};
-    Room.findOneAndUpdate({_id: room_id}, {$push: {'room_service.missing_items': newMissing} }, {new: true}).exec((err, room) => {
+    if(!room_id || !items) return reject('room_id || items params are missing');
+    Room.findById(room_id, async (err, room) => {
       if(err) return reject(err.message);
       else if(!room) return reject(`room ${room_id} is not exists`);
-      resolve(room);
+      let newMissing = {
+        'items': items
+      }
+      room.room_service.missing.push(newMissing);
+
+      room.save((err, room) => {
+        if(err) return reject(err.massage);
+        resolve(room);
+      })
     });
   });
 }
+
+// exports.addMissing = ({room_id, item, quantity}) => {
+//   return new Promise((resolve, reject) => {
+//     if(!room_id || !item || !quantity) return reject('room_id || item || quantity params are missing');
+//     const newMissing = {item,quantity};
+//     Room.findOneAndUpdate({_id: room_id}, {$push: {'room_service.missing_items': newMissing} }, {new: true}).exec((err, room) => {
+//       if(err) return reject(err.message);
+//       else if(!room) return reject(`room ${room_id} is not exists`);
+//       resolve(room);
+//     });
+//   });
+// }
 
 exports.handleMissing = ({call_id}) => {
   return new Promise((resolve, reject) => {
     if(!call_id) return reject('call_id param is missing');
     console.log(call_id)
-    Room.findOneAndUpdate({'room_service.missing_items':{$elemMatch:{_id:call_id}}},
-      {$set:{'room_service.missing_items.$.is_handle': true}},
+    Room.findOneAndUpdate({'room_service.missing':{$elemMatch:{_id:call_id}}},
+      {$set:{'room_service.missing.$.is_handle': true}},
       (err, call)=>{
        if(err) return reject(err.message);
        else if(!call) return reject("no such call exist");
@@ -80,8 +98,8 @@ exports.completeMissing = ({call_id}) => {
   return new Promise((resolve, reject) => {
     if(!call_id) return reject('call_id param is missing');
     console.log(call_id)
-    Room.findOneAndUpdate({'room_service.missing_items':{$elemMatch:{_id:call_id}}},
-      {$pull:{'room_service.missing_items': { '_id': call_id}}},
+    Room.findOneAndUpdate({'room_service.missing':{$elemMatch:{_id:call_id}}},
+      {$pull:{'room_service.missing': { '_id': call_id}}},
       (err, call)=>{
        if(err) return reject(err.message);
        else if(!call) return reject("no such call exist");

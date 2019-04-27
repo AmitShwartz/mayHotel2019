@@ -8,9 +8,8 @@ var RoomSchema = new Schema({
     number:   {type:Number, required: true},
     user:     {type: String , ref : 'User', default: null},
     room_service: {
-      missing_items: [{
-        item: String,
-        quantity: Number,
+      missing: [{
+        items:[{item: String, quantity: Number, _id: false}],
         is_handle: {type:Boolean, default: false},
         date: {type: Date, default: new Date()}
       }],
