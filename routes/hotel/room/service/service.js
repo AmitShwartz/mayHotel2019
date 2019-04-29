@@ -56,7 +56,7 @@ router.post('/clean', (req,res) => {
   .catch(err => resError(res, err));
 });
 
-router.put('/clean', (req,res) => {
+router.post('/clean', (req,res) => {
   ctrl.handleClean(req.body)
   .then((room) => resSuccess(res, room))
   .catch(err => resError(res, err));
