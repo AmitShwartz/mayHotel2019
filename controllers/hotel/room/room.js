@@ -54,9 +54,9 @@ exports.getAvailableRooms = ({hotel_id}) => {
 }
 
 // add rooms to hotel
-exports.addRooms = ({hotel_id, min, max, exc}) => {
+exports.addRooms = ({hotel_id, min, max, capacity, exc}) => {
   return new Promise(async (resolve,reject) => {
-    if(!hotel_id || !min || !max) return reject('hotel_id || min || max params are missing');
+    if(!hotel_id || !min || !max || !capacity) return reject('hotel_id || min || max || capacity params are missing');
     console.log(hotel_id)
     let excArray = [];
     if(exc) excArray = exc.split(",");
@@ -69,7 +69,7 @@ exports.addRooms = ({hotel_id, min, max, exc}) => {
       var roomsFail = [];
       for(let i=min; i<=max; i++){
         if(!excArray.includes(i.toString())) {  //only if room is NOT in excArray
-          let newRoom = new Room({hotel: hotel_id, number: i});
+          let newRoom = new Room({hotel: hotel_id, number: i, capacity});
           newRoom.save((err) => {
             if(err) //might ref not exists || (hotel, number) unique key already exists
               roomsFail.push({number: i, error: err.message});
@@ -85,9 +85,9 @@ exports.addRooms = ({hotel_id, min, max, exc}) => {
   });
 }
 
-exports.checkIn = ({room_id, user_id, num_of_days}) => {
+exports.checkIn = ({room_id, user_id, num_of_days, guest_amount}) => {
   return new Promise(async (resolve, reject) => {
-    if(!room_id || !user_id || !num_of_days) reject('num_of_days || room_id || user_id params are missing');
+    if(!room_id || !user_id || !num_of_days || !guest_amount) reject('guest_amount ||num_of_days || room_id || user_id params are missing');
     else if(num_of_days<0) reject('num_of_days param is illigle');
     await User.findById(user_id, async (err, user) => {
       if(err) return reject(err.message);
@@ -97,7 +97,9 @@ exports.checkIn = ({room_id, user_id, num_of_days}) => {
         if(err) return reject(err.message);
         else if(!room) return reject(`room ${room_id} not exists`);
         else if(room.user != null) return reject(`room ${room_id} already occupied`);
+        else if(room.capacity < guest_amount) return reject(`room ${room_id} max capacity is ${room.capacity}`);
         room.user = user_id;
+        room.guest_amount = guest_amount;
         room.startdate = new Date();
         room.enddate = new Date();
         room.enddate.setDate(room.enddate.getDate() + Number(num_of_days));
@@ -135,6 +137,18 @@ exports.checkOut = ({room_id, user_id}) => {
   return new Promise((resolve, reject)  => {
     if(!room_id || !user_id) reject('room_id || user_id params are missing');
 
+    Room.findById(room_id).then((room) => {
+      if(!room) return reject(`room_id: ${room_id} not exists)`);
+      if(room.user == null) return reject(`room is already empty`);
+      if(room.user != user_id) return reject(`room is occupied by another user: ${room.user}`);
+
+      room.user = null;
+      room.guest_amount = 0;
+      room.save((e, room) => {
+        if(e) reject(new Error(e.message));
+        resolve(room);
+      })
+    })
     Room.checkOut(room_id, user_id).then(room => resolve(room)).catch(e => reject(e.message));
   });
 }

@@ -10,6 +10,8 @@ var UserSchema = new Schema({
     phone:      {type:String, required: true},
     address:    {type:String, required: true},
     room:       {type: objectID , ref : 'Room', default: null},
+    vouchers: [{voucher_id:{type: objectID , ref : 'Voucher', default: null},_id: false}],
+
     QRcode:     {type:String}
   },{collection: 'users'});
 

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const {resError, resSuccess} = require("../../consts");
 const ctrl = require('../../controllers/user/user');
+const {getVouchersByUser} = require('../../controllers/hotel/voucher')
 
 router.post('/', (req,res) => {
   ctrl.register(req.body)
@@ -10,6 +11,12 @@ router.post('/', (req,res) => {
 
 router.get('/:user_id', (req,res) => {
   ctrl.getUserByID(req.params)
+  .then(user => resSuccess(res, user))
+  .catch(err => resError(res, err));
+});
+
+router.get('/:user_id/vouchers', (req,res) => {
+  getVouchersByUser(req.params)
   .then(user => resSuccess(res, user))
   .catch(err => resError(res, err));
 });

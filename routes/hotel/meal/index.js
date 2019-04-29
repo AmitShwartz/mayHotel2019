@@ -8,6 +8,12 @@ router.post('/', async (req, res) => {
   .catch(err => resError(res, err));
 });
 
+router.get('/:hotel_id', (req, res) => {
+  ctrl.getMeals(req.params)
+  .then(meal => resSuccess(res, meal))
+  .catch(err => resError(res, err));
+});
+
 router.delete('/', async (req, res) => {
   ctrl.removeMeal(req.body)
   .then(cb => resSuccess(res, cb))

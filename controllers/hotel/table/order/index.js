@@ -40,7 +40,7 @@ exports.addOrder = async ({meal, user, date, sits}) => {
         }).sort('sits').exec((err, tables) => {
           if(err) return reject(err.message);
           //static function add user to coupon list
-          else if(!tables || tables.length===0) return reject('table not available for that meal.');
+          else if(!tables || tables.length===0) return reject({meal, user, date});
 
           let newOrder = {user, meal, at};
           let availableTable = tables[0];

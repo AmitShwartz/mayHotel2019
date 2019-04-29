@@ -8,28 +8,25 @@ const User = require('./user');
 const OrderSchema = new Schema({
   meal:       {type: objectID, ref : 'Meal', required: false},
   user:       {type: String ,  ref : 'User', required: true},
-  at:         {type: Number, required: true}, //INT -> YYYYMMDD
-  status: {
-    isArrived:  {type:Boolean, default: false},
-    isLeft:     {type:Boolean, default: false}
-  }
+  at:         {type: Number, required: true} //INT -> YYYYMMDD
 });
 
 OrderSchema.pre('save', function(next){
-  User.findById(this.user).exec((err, hotel) => {
+  User.findById(this.user).exec((err, user) => {
     if(err) next(err);
-    if(!hotel) next(new Error("user_id not exists"));
+    if(!user) next(new Error("user_id not exists"));
     next();
   })
 });
 
 
 var TableSchema = new Schema({
-  hotel:        {type: objectID , ref : 'Hotel', required: true},
-  number:       {type:Number, required: true, min: [1, 'room number illegal']},
-  sits:         {type: Number, required: true, min: [1, 'at least 1 sit']},
-  curr_user:    {type: String ,  ref : 'User', default: null},
-  orders:       [OrderSchema]
+  hotel:     {type: objectID , ref : 'Hotel', required: true},
+  number:    {type: Number, required: true, min: [1, 'room number illegal']},
+  sits:      {type: Number, required: true, min: [1, 'at least 1 sit']},
+  curr_user: {type: String ,  ref : 'User', default: null},
+  counter:   {type: Number, default: 0},
+  orders:    [OrderSchema]
 },{collection: 'tables'});
 
 TableSchema.index({ hotel: 1, number: 1}, { unique: true }); //(hotel, number) = unique key
