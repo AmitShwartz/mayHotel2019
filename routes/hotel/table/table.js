@@ -6,7 +6,7 @@ const ctrl = require('../../../controllers/hotel/table/table');
 router.use('/orders', router_order);
 
 router.post('/', (req, res) => {
-  ctrl.addTable(req)
+  ctrl.addTable(req.body)
   .then((table) => resSuccess(res, table))
   .catch(err => resError(res, err));
 });

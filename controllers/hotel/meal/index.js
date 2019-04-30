@@ -69,28 +69,31 @@ exports.exit = async ({hotel_id, user_id}) => {
 };
 
 exports.enter =  ({hotel_id, user_id}) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     if(!user_id || !hotel_id) reject('user_id || hotel_id are missing');
-    const params = {user_id, hotel_id, today_int: DATE_INT(new Date()), time_int: 1220} 
-   // const params = {user_id, hotel_id, today_int: DATE_INT(new Date()), time_int: TIME_INT(moment().format('HH:mm'))} 
-    
-    await Meal.findOne({
-      hotel: hotel_id,
-      'int.startTime': {$lte: params.time_int},
-      'int.endTime': {$gte: params.time_int}
-    }).exec(async (err, curr_meal) => { //found which meal is it according to curr_date and curr_time  
-      if(err) return reject(err.message);
-      else if(!curr_meal) return reject('meal not available right now');
 
-      params['curr_meal'] = curr_meal;
-      const ignoreOrders  = (params.time_int>curr_meal.int.startTime+30) ? true : false; //after 30 minutes since meal started -> ignore orders. enter on base of available tables.
+    User.findById(user_id).populate('room').exec((err,user)=>{
+      if(err) return reject(err.massage);
+      else if(!user) return reject(`user ${user_id} not exists`);
+      else if (`${user.room.hotel}` !== `${hotel_id}`) return reject(`user ${user_id} is not a guest`);
+    //const params = {user_id, hotel_id, today_int: 20190430, time_int: 1901,guest_amount: user.room.guest_amount} 
+      const params = {
+        user_id,
+        hotel_id,
+        today_int: DATE_INT(new Date()),
+        time_int: TIME_INT(moment().format('HH:mm')),
+        guest_amount: user.room.guest_amount
+      }
 
-      await User.findById(user_id).populate('room').exec((err,user)=>{
-        if(err) return reject(err.massage);
-        else if(!user) return reject(`user ${user_id} not exists`);
+      Meal.findOne({ hotel: hotel_id,
+                    'int.startTime': {$lte: params.time_int},
+                    'int.endTime': {$gte: params.time_int}
+      }).exec(async (err, curr_meal) => { //found which meal is it according to curr_date and curr_time  
+        if(err) return reject(err.message);
+        else if(!curr_meal) return reject('meal not available right now');
 
-        params['guest_amount'] = user.room.guest_amount;
-
+        params['curr_meal'] = curr_meal;
+        const ignoreOrders  = (params.time_int>curr_meal.int.startTime+30) ? true : false; //after 30 minutes since meal started -> ignore orders. enter on base of available tables.
         if(ignoreOrders)
           enterSpontanic(params)
           .then(order => resolve(order))
@@ -104,34 +107,9 @@ exports.enter =  ({hotel_id, user_id}) => {
   });
 }
 
-// exports.enter = async ({hotel_id, user_id}) => {
-//   return new Promise((resolve, reject) => {
-//     if(!user_id || !hotel_id) reject('user_id || hotel_id are missing');
-
-//     const params = {user_id, hotel_id, today_int: DATE_INT(new Date()), time_int: TIME_INT(moment().format('HH:mm'))} 
-
-//     Meal.findOne({hotel: hotel_id, 'int.startTime': {$lte: params.time_int}, 'int.endTime': {$gte: params.time_int}}).exec((err, curr_meal) => {
-//       //found which meal is it according to curr_date and curr_time
-//       if(err) return reject(err.message);
-//       if(!curr_meal) return reject('meal not available right now');
-
-//       params['curr_meal'] = curr_meal;
-//       const ignoreOrders  = (params.time_int>curr_meal.int.startTime+30) ? true : false; //after 30 minutes since meal started -> ignore orders. enter on base of available tables.
-
-//       try{
-//         if(ignoreOrders)
-//           return resolve(enterSpontanic(params));
-//         else
-//           return resolve(enterWithOrder(params));
-//       }catch(e) {
-//         reject(e.message);
-//       }
-//     });
-//   });
-// }
-
 const enterWithOrder = async (params) => {
   return new Promise(async (resolve, reject) => {
+    //find the orderd table
     Table.findOne({
       hotel: params.hotel_id,
       $or:[{orders: {
@@ -143,10 +121,11 @@ const enterWithOrder = async (params) => {
     }).exec(async (err, table) => {
       if(err) return reject(err.message);
       else if(!table) {
-        Table.find({ //check for available table
+        //order not exist check for available table
+        Table.find({ 
           hotel: params.hotel_id,
           curr_user: null,
-          sits: {$gte: params.guest_amount},
+          seats: {$gte: params.guest_amount},
           orders:{
             $not: {
               $elemMatch: {
@@ -155,7 +134,7 @@ const enterWithOrder = async (params) => {
               }
             }
           }
-        }).sort('sits').exec(async (err, tables) => {
+        }).sort('seats').exec(async (err, tables) => {
           if(err) return reject(err.message);
           else if(!tables || tables.length===0) return reject('not available spontanic table right now');
   
@@ -169,7 +148,7 @@ const enterWithOrder = async (params) => {
           });
         });
       }
-      else if(table.counter == params.guest_amount) return reject(`teble ${table.number} reached the count limit`);
+      else if(table.counter == params.guest_amount || table.counter == table.seats) return reject(`teble ${table.number} reached the count limit`);
       else if(table.curr_user == null) table.curr_user = params.user_id;
       
       table.counter += 1;
@@ -194,8 +173,8 @@ const enterSpontanic = (params) => {
         Table.find({ //check for available table
           hotel: params.hotel_id,
           curr_user: null,
-          sits: {$gte: params.guest_amount}
-        }).sort('sits').exec(async (err, tables) => {
+          seats: {$gte: params.guest_amount}
+        }).sort('seats').exec(async (err, tables) => {
           if(err) return reject(err.message);
           if(!tables || tables.length===0) return reject('not available spontanic table right now');
   
@@ -209,7 +188,7 @@ const enterSpontanic = (params) => {
           });
         });
       }
-      else if(table.counter == params.guest_amount || table.counter == table.sits) return reject(`teble ${table.number} reached the count limit`);
+      else if(table.counter == params.guest_amount || table.counter == table.seats) return reject(`teble ${table.number} reached the count limit`);
 
       table.counter += 1;
       table.save((err, table) => { //connect table to user. in /exit the table.user will be set to null again.
@@ -219,32 +198,3 @@ const enterSpontanic = (params) => {
     });
   });
 }
-
-// const enterSpontanic = (params) => {
-//   return new Promise((resolve, reject) => {
-//      Table.findOne({ //check if user not already sitted.
-//       hotel: params.hotel_id,
-//       curr_user: params.user_id
-//     }).exec(async (err, table) => {
-//       if(err) return reject(err.message);
-//       if(table) return reject(`user already sit on table: ${table.number}`);
-
-//         Table.find({ //check for available table
-//         hotel: params['hotel_id'],
-//         curr_user: null,
-//         sits: {$gte: params['guest_amount']}
-//       }).sort('sits').exec(async (err, tables) => {
-//         if(err) return reject(err.message);
-//         if(!tables || tables.length===0) return reject('not available spontanic table right now');
-
-//         let available_table = tables[0];
-//         available_table['curr_user'] = params['user_id'];
-//         available_table.save((err, table) => { //connect table to user. in /exit the table.user will be set to null again.
-//           if(err) return reject(err.message);
-//           console.log(1)
-//           return resolve({table_number: table.number, status: 'open'}); //open door
-//         });
-//       });
-//     });
-//   });
-// }

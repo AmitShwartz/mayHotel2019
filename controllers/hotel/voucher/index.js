@@ -1,23 +1,33 @@
+const mongoose = require('mongoose');
+const ObjectId =  mongoose.Types.ObjectId;
+const QRCode  = require('qrcode');
 const Voucher = require('../../../schemas/voucher');
 const {DATE_INT} = require('../../../consts');
 const User = require('../../../schemas/user');
 const _ = require('lodash');
 
-exports.addVoucher = ({user, meal, date_of_use, value}) =>{ 
+exports.addVoucher = ({user_id, meal_id, date, value}) =>{ 
     return new Promise((resolve, reject) =>{
-        if(!user|| !meal|| !date_of_use || !value) return reject('user|| meal|| date_of_use || value params are missing');
+        if(!user_id|| !meal_id|| !date || !value) return reject('user_id|| meal_id|| date || value params are missing');
 
-        Voucher.findOne({user, meal, date_of_use}, async (err, voucher) =>{
+        Voucher.findOne({user_id, meal_id, date}, async (err, voucher) =>{
             if(err) return reject(err);
-            else if(voucher) return reject('voucher already given for that meal');
-            let newVoucher = new Voucher({user, meal, date_of_use, value});
-            newVoucher.save((err, voucher)=>{
-                if(err) return reject(err.massage);
-                User.findByIdAndUpdate(user,{$push: {vouchers: {voucher_id: voucher.id}}}, err =>{
-                    if(err) return reject(err);
-                    console.log(3)
-                    resolve(voucher);
-                })  
+            else if(voucher) return reject('voucher already given for that meal_id');
+
+            let _id = new ObjectId();
+            let newVoucher = new Voucher({_id, user_id, meal_id, date, value});
+
+            QRCode.toDataURL(`${_id}`, function (err, url) {
+                if(err) reject(err);
+                newVoucher.qrcode = url;
+
+                newVoucher.save((err, voucher)=>{
+                    if(err) return reject(err.massage);
+                    User.findByIdAndUpdate(user_id,{$push: {vouchers: {voucher_id: voucher.id}}}, err =>{
+                        if(err) return reject(err);
+                        resolve(voucher);
+                    })
+               }); 
             }) 
         })
     });
@@ -29,7 +39,7 @@ exports.getVouchersByUser = ({user_id}) =>{
         console.log(user_id)
         User.findById(user_id).populate('Voucher').exec((err, user) =>{
             if(err) return reject(err);
-            else if(!user) return reject(`user ${user} not exist`);
+            else if(!user) return reject(`user ${user_id} not exist`);
             resolve(user.vouchers);
         })
     });
@@ -38,10 +48,9 @@ exports.getVouchersByUser = ({user_id}) =>{
 exports.completeVoucher = ({voucher_id}) =>{ 
     return new Promise((resolve, reject) =>{
         if(!voucher_id) return reject('voucher param is missing');
-        let date_of_use = DATE_INT(new Date());
-        console.log(date_of_use)
+        let date = DATE_INT(new Date());
         
-        Voucher.findOneAndDelete({_id:voucher_id, date_of_use}, async (err, voucher) =>{
+        Voucher.findOneAndDelete({_id:voucher_id, date}, async (err, voucher) =>{
             if(err) return reject(err);
             else if(!voucher) return reject('voucher not valid');
                 

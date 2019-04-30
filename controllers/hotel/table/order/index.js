@@ -2,24 +2,31 @@ const _ = require('lodash');
 const moment = require('moment');
 const {DATE_INT}   =   require('../../../../consts');
 
-const Hotel   =   require('../../../../schemas/hotel');
+const User   =   require('../../../../schemas/user');
 const Meal    =   require('../../../../schemas/meal');
 const Table   =   require('../../../../schemas/table');
 
-exports.addOrder = async ({meal, user, date, sits}) => {
-  return new Promise((resolve, reject) => {
-    if(!meal || !user || !date || !sits)
-      reject('user || meal || date || sits params are missing');
+exports.addOrder = ({meal, user, date, seats}) => {
+  return new Promise(async (resolve, reject) => {
+    if(!meal || !user || !date || !seats)
+      reject('user || meal || date || seats params are missing');
 
     const at    =   DATE_INT(new Date(date));
     const today =   DATE_INT(new Date());
     if(at < today)
       reject('date illegal. already passed');
 
-    Meal.findById(meal).exec((err, meal) => { //check if meal exists
+    Meal.findById(meal).exec(async (err, meal) => { //check if meal exists
       if(err)   return reject(err.message);
       else if(!meal) return reject('meal not exists');
       const hotel = meal.hotel;
+
+      await User.findById(user).populate('room')
+      .then(check =>{
+        if(!check) return reject('user not exists');
+        else if(check.room == null) return reject('user not a guest in hotel 1');
+        else if(`${check.room.hotel}` !== `${hotel}`) return reject('user not a guest in hotel 2');
+      }).catch(err => {if(err) return reject(err.message)})
 
       Table.find({hotel, orders: {$elemMatch: {meal,user,at}}})
        .exec((err, tables) =>{ //check if user not already ordered table for that meal
@@ -36,11 +43,11 @@ exports.addOrder = async ({meal, user, date, sits}) => {
               }
             }
           },
-          sits: {$gte: sits}
-        }).sort('sits').exec((err, tables) => {
+          seats: {$gte: seats}
+        }).sort('seats').exec((err, tables) => {
           if(err) return reject(err.message);
           //static function add user to coupon list
-          else if(!tables || tables.length===0) return reject({meal, user, date});
+          else if(!tables || tables.length===0) return reject({'meal_id':meal.id,'user_id': user, 'date': at});
 
           let newOrder = {user, meal, at};
           let availableTable = tables[0];

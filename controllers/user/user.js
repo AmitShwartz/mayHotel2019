@@ -2,24 +2,24 @@ const User = require('../../schemas/user');
 const QRCode  = require('qrcode');
 const _ = require('lodash');
 
-exports.register = async ({user_id, firstname, lastname, phone, address}) => {
-  return new Promise((resolve, reject) => {
+exports.register = ({user_id, firstname, lastname, phone, address}) => {
+  return new Promise(async (resolve, reject) => {
     if(!user_id || !firstname || !lastname || !phone || !address)
       reject('user_id || firstname || lastname || phone || address params are missing');
    
     let newUser = new User({
       _id: user_id,
-      firstname, lastname, phone, address, 
+      firstname, lastname, phone, address 
     });
     
-    QRCode.toDataURL(user_id, function (err, url) {
+    QRCode.toDataURL(`${user_id}`, function (err, url) {
       if(err) reject(err);
-      newUser.QRcode = url;
-    });
+      newUser.qrcode = url;
 
-    newUser.save((err, user) => {
-      if (err) reject(err.message);
-      resolve(user);
+      newUser.save((err, user) => {
+        if (err) reject(err.message);
+        resolve(user);
+      });
     });
   })
 }

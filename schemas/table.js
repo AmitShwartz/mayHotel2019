@@ -23,7 +23,7 @@ OrderSchema.pre('save', function(next){
 var TableSchema = new Schema({
   hotel:     {type: objectID , ref : 'Hotel', required: true},
   number:    {type: Number, required: true, min: [1, 'room number illegal']},
-  sits:      {type: Number, required: true, min: [1, 'at least 1 sit']},
+  seats:     {type: Number, required: true, min: [1, 'at least 1 seat']},
   curr_user: {type: String ,  ref : 'User', default: null},
   counter:   {type: Number, default: 0},
   orders:    [OrderSchema]
