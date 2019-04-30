@@ -24,8 +24,8 @@ exports.addOrder = ({meal, user, date, seats}) => {
       await User.findById(user).populate('room')
       .then(check =>{
         if(!check) return reject('user not exists');
-        else if(check.room == null) return reject('user not a guest in hotel 1');
-        else if(`${check.room.hotel}` !== `${hotel}`) return reject('user not a guest in hotel 2');
+        else if(check.room == null) return reject('user not a guest in hotel ');
+        else if(`${check.room.hotel}` !== `${hotel}`) return reject('user not a guest in hotel ');
       }).catch(err => {if(err) return reject(err.message)})
 
       Table.find({hotel, orders: {$elemMatch: {meal,user,at}}})
@@ -47,7 +47,7 @@ exports.addOrder = ({meal, user, date, seats}) => {
         }).sort('seats').exec((err, tables) => {
           if(err) return reject(err.message);
           //static function add user to coupon list
-          else if(!tables || tables.length===0) return reject({'meal_id':meal.id,'user_id': user, 'date': at});
+          else if(!tables || tables.length===0) return resolve({'meal_id':meal.id,'user_id': user, 'date': at});
 
           let newOrder = {user, meal, at};
           let availableTable = tables[0];
