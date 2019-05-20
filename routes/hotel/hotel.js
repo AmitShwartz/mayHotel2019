@@ -1,20 +1,19 @@
 const router = require('express').Router();
-const {resError, resSuccess} = require("../../consts");
+const auth = require('../../middleware/hotelAuth');
 const ctrl = require('../../controllers/hotel/hotel');
+
 const router_room     = require('./room/room');
-const router_schedule = require('./schedule/schedule');
 const router_table    = require("./table/table");
 const router_meal     = require("./meal");
-const router_therepist     = require("./therepist");
+const eventRouter = require('../event')
 
 router.use('/rooms', router_room);
-router.use("/schedule",router_schedule);
 router.use("/tables",router_table);
 router.use("/meals",router_meal);
-router.use("/therepist",router_therepist);
+router.use("/events", eventRouter);
 
-router.post('/', (req,res) => {
-  ctrl.createHotel(req.body).then(hotel => resSuccess(res, hotel)).catch(err => resError(res, err));
-});
+router.post('/', ctrl.createHotel);
+router.post('/login', ctrl.login);
+router.post('/logout', auth, ctrl.logout);
 
 module.exports = router;

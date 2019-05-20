@@ -4,13 +4,15 @@ const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser')
 
-const router_hotel = require('./routes/hotel/hotel');
-const router_user = require('./routes/user/user');
+const hotelsRouter = require('./routes/hotel/hotel');
+const usersRouter = require('./routes/user/user');
 
 const {PORT, DB_URI, resError} = require('./consts');
 
 function startService(){
-  mongoose.connect(DB_URI,{ useNewUrlParser: true }, (err) => {
+  mongoose.connect(DB_URI,{ 
+    useCreateIndex: true,
+    useNewUrlParser: true }, (err) => {
     console.log("connected to mongoDB");
   });
 
@@ -28,8 +30,8 @@ function startService(){
     next();
   });
 
-  app.use('/hotel', router_hotel);
-  app.use('/user', router_user);  
+  app.use('/hotels', hotelsRouter);
+  app.use('/users', usersRouter);  
 
   app.all('/*', function(req, res) {
       return resError(res, "404 not found");

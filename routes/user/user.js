@@ -1,30 +1,24 @@
 const router = require('express').Router();
-const {resError, resSuccess} = require("../../consts");
-const ctrl = require('../../controllers/user/user');
-const {getVouchersByUser} = require('../../controllers/hotel/voucher')
+const {resSuccess} = require("../../consts");
+const ctrl = require('../../controllers/user');
+const auth = require('../../middleware/auth');
 
-router.post('/', (req,res) => {
-  ctrl.register(req.body)
-  .then(user => resSuccess(res, user))
-  .catch(err => resError(res, err));
-});
+router.post('/', ctrl.signIn ); // Done
+router.post('/login', ctrl.login ); // Done
+router.post('/logout', auth, ctrl.logout ); // Done
+router.post('/logoutAll', auth, ctrl.logoutAll ); // Done
 
-router.get('/:user_id', (req,res) => {
-  ctrl.getUserByID(req.params)
-  .then(user => resSuccess(res, user))
-  .catch(err => resError(res, err));
-});
+router.get('/me', auth, (req,res) => resSuccess(res, req.user)); // Done
+router.get('/me/vouchers', auth, ctrl.getVouchers); // Done
+router.get('/me/events', auth, ctrl.getEvents); // Done
 
-router.get('/:user_id/vouchers', (req,res) => {
-  getVouchersByUser(req.params)
-  .then(user => resSuccess(res, user))
-  .catch(err => resError(res, err));
-});
+// Not done!
+router.get('/me/spa', auth, (req,res) => resSuccess(res, req.user.spa));
 
-router.put('/', (req,res) => {
-  ctrl.edit(req.body)
-  .then(user => resSuccess(res, user))
-  .catch(err => resError(res, err));
-});
+
+
+router.put('/me', auth, ctrl.edit ); // Done
+
+router.delete('/me', auth, ctrl.deleteUser ); // Done
 
 module.exports = router;

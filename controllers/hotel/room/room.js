@@ -106,6 +106,7 @@ exports.checkIn = ({room_id, user_id, num_of_days, guest_amount}) => {
         room.save((err, room) => {
           if(err) return reject(err.message);
           user.room = room_id;
+          user.hotel = room.hotel;
           user.save((err, user) => {
             if(err) return reject(err.message);
             

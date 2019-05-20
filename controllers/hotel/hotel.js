@@ -1,15 +1,37 @@
 const Hotel = require('../../schemas/hotel');
+const {resError, resSuccess} = require("../../consts");
 
-exports.createHotel = ({name, logo}) => {
-  return new Promise((resolve, reject) => {
-    if(!name) return reject('name param is missing');
+exports.createHotel = async (req, res) => {
+  try {
+    const newHotel = new Hotel(req.body);
+    await newHotel.save();
 
-    const newHotel = new Hotel({name, logo});
-    newHotel.save((err,hotel) => {
-      if (err) return reject(err.message);
-      resolve(hotel);
-    });
-  });
+    const token = await newHotel.generateAuthToken();
+
+    resSuccess(res, {hotel: newHotel, token});
+  }catch(err) {
+    resError(res, err.massage);
+  }
+}
+
+exports.login = async (req, res) => {
+  try {
+    const hotel = await Hotel.findByCredentials(req.body.name, req.body.password);
+    const token = await hotel.generateAuthToken();
+    resSuccess(res, {hotel, token});
+  } catch(err) {
+    resError(res, err.message);
+  }
+}
+
+exports.logout = async (req, res) => {
+  try {
+    req.hotel.token = null;
+    await req.hotel.save();
+    resSuccess(res);
+  } catch(err) {
+    resError(res, err.message);
+  }
 }
 
 // exports.getTables = ({hotel_id}) => {

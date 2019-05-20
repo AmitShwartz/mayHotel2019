@@ -1,30 +1,82 @@
 const _      =  require('lodash');
-const Hotel       =   require('../../../schemas/hotel');
-const Event        =   require('../../../schemas/event');
-const {DATE_INT, TIME_INT}   =   require('../../../consts');
+const Event = require('../../../schemas/event');
+const User = require('../../../schemas/user');
+const {DATE_INT, TIME_INT, resSuccess, resError}   =   require('../../../consts');
 
-// not finished
+exports.addEvent = async (req, res) => {
+  try {
+    const newEvent = new Event(req.body); 
+    await newEvent.save();
+    resSuccess(res, {event: newEvent});
+  } catch(err) {
+    resError(res, err.message);
+  }
+}
 
+exports.getEvent = async (req, res) => { 
+  try {
+    const event = await Event.findById(req.params.event_id);
+    resSuccess(res, event);
+  } catch(err) {
+    resError(res, err.message);
+  }
+}
 
-exports.addEvent = async (req) => new Promise((resolve, reject) => {
-    let body = _.pick(req.body, ['hotel', 'name', 'time', 'date','content','capcity','category','location']);
-    if(_.size(body) !== 8) reject('hotel || name || time || date || content || category || location || capacity params are missing');
-    
-    body.date = DATE_INT(body.date);
-    let newEvent = new Event(body);
-    newEvent.save((err, event) => {
-    if(err) reject(err.message);
-    resolve(event);
-    })
-});
+exports.getByHotel = async (req, res) => { 
+  try {
+    const events = await Event.find({hotel: req.params.hotel_id});
+    resSuccess(res, events);
+  } catch(err) {
+    resError(res, err.message);
+  }
+}
   
-exports.removeEvent = async ({event_id}) =>  new Promise((resolve, reject) => {
-    if(!event_id) reject("event_id is missing");
-    Event.findByIdAndRemove(event_id,(err, cb) => {
-    if(err) return reject(err.message);
-    resolve(cb);
-    })
-});
+exports.deleteEvent = async (req, res) => { 
+  try {
+    const event = await Event.findById(req.body.event_id);
+    await event.remove();
+    resSuccess(res, event);
+  } catch(err) {
+    resError(res, err.message);
+  }
+  
+}
+
+exports.addReservation = async (req, res) => {
+  try{
+    const {event_id, amount} = req.body;
+    const user = await req.user.populate('room').execPopulate();
+    const event = await Event.checkCounter(event_id, amount);
+    if(user.room.guest_amount < amount || amount <= 0) throw Error('Invalid amount.');
+
+    const reservation_id = await event.listUser(user, amount);
+    await user.listEvent(reservation_id, amount);
+
+    resSuccess(res, event);
+  }catch(err){
+    resError(res, err.message);
+  }
+}
+
+exports.cancleReservation = async (req, res) => {
+  try{
+    const {reservation_id} = req.params;
+    const user = req.user;
+    const event = await Event.findOne({'reservations._id': reservation_id});
+    if(!event) throw new Error('reservation_id invalid')
+
+    await event.listOutUser(reservation_id);
+
+    user.events = await user.events.filter(
+      reservation => reservation.reservation.toString() !== reservation_id);
+    console.log(user.events)
+    await user.save();
+
+    resSuccess(res, event);
+  }catch(err){
+    resError(res, err.message);
+  }
+}
 
 
 exports.exit = async ({event_id, user_id}) => new Promise((resolve, reject) => {
