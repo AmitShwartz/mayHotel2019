@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
+  "engines" : { "node" : ">=0.10.3 <0.12" },
   "author": "Maya & Yehudit & Amit",
   "license": "ISC",
   "dependencies": {
