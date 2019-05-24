@@ -6,7 +6,7 @@ const auth = async (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ','');
         const decoded = jwt.verify(token,'mayHotel2019');
   
-        const user = await User.findOne({_id: decoded._id, 'tokens.token': token}).populate('room').execPopulate();
+        const user = await User.findOne({_id: decoded._id, 'tokens.token': token});
 
         if(!user) throw new Error ();
 
