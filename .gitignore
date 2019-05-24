@@ -1,3 +1,7 @@
 node_modules/
 misc/
 public/
+controllers/hotel/event/index.js
+controllers/user/index.js
+routes/event/index.js
+schemas/user.js
