@@ -6,6 +6,8 @@ const QRCode  = require('qrcode');
 const Schema = mongoose.Schema;
 const objectID = Schema.Types.ObjectId;
 
+
+///not finished
 const UserSchema = new Schema({
   _id: {
     type:String,
@@ -33,6 +35,10 @@ const UserSchema = new Schema({
         throw new Error('Last name is invalid')
     }
   },
+  avatar: {
+    type: String,
+     default:"https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwixoPbft6riAhXRZ1AKHS5WAVAQjRx6BAgBEAU&url=http%3A%2F%2Fwww.iconarchive.com%2Fshow%2Fpapirus-status-icons-by-papirus-team%2Favatar-default-icon.html&psig=AOvVaw1vRvWyJiMUk0hpjTwMX1pg&ust=1558452937788493"
+    },
   phone: {
     type:String,
     required: true,
@@ -75,23 +81,25 @@ const UserSchema = new Schema({
   vouchers: [{
     voucher: {type: objectID,
       ref: 'Voucher',
-      default: null
+      required: true
     },
     _id: false
   }],
-  events: [{
+  reservations: [{
     reservation: {
       type: objectID,
-      ref: 'Event',
+      ref: 'Reservation',
       required: true
-    }
+    },
+    _id: false
   }],
   spa: [{
     appointment: {
       type: objectID,
       ref: 'Spa',
       required: true
-    }
+    },
+    _id: false
   }],
   tokens: [{
     token: {type: String, required: true}
@@ -128,17 +136,14 @@ UserSchema.methods.toJSON = function () {
 
   delete userObject.password;
   delete userObject.tokens;
-  delete userObject.events;
-  delete userObject.spa;
-  delete userObject.vouchers;
 
   return userObject;
 }
 
-UserSchema.methods.listEvent = async function(reservation_id, amount){
+UserSchema.methods.listEvent = async function(reservation_id){
   const user = this;
 
-  user.events = user.events.concat({reservation: reservation_id, amount});
+  user.events = await user.events.concat({reservation: reservation_id});
   await user.save();
 }
 

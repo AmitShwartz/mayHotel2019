@@ -9,6 +9,6 @@ router.get('/one/:event_id', ctrl.getEvent );
 router.get('/:hotel_id', ctrl.getByHotel );
 
 router.delete('/:event_id', ctrl.deleteEvent );
-router.delete('/reservation/:reservation_id', auth, ctrl.cancleReservation );
+router.delete('/reservation/:reservation_id', auth, ctrl.cancelReservation );
 
 module.exports = router;
