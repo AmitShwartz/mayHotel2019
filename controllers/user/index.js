@@ -71,6 +71,17 @@ exports.getVouchers = async (req, res) => {
   }
 };
 
+exports.getAppointments = async (req, res) => {
+  try {
+    const user = req.user;
+    await user.populate('spa.appointment').execPopulate();
+
+    resSuccess(res, user.spa);
+  } catch (err) {
+    resError(res, err.message);
+  }
+};
+
 exports.edit = async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ['phone', 'email', 'password', 'address', 'avatar'];

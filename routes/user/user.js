@@ -13,7 +13,7 @@ router.get('/me/vouchers', auth, ctrl.getVouchers); // Done
 router.get('/me/events', auth, ctrl.getEvents); // Done
 
 // Not done!
-router.get('/me/spa', auth, (req,res) => resSuccess(res, req.user.spa));
+router.get('/me/spa', auth, ctrl.getAppointments);
 
 
 
