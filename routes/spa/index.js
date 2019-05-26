@@ -5,7 +5,7 @@ const auth = require('../../middleware/auth');
 router.post('/', ctrl.addSpa );
 router.post('/appointment', auth, ctrl.addAppointment );
 
-// router.get('/one/:spa_id', ctrl.getSpa );
+router.get('/:hotel/available', ctrl.getSpaAvailable );
 router.get('/available/:hotel/:date', ctrl.getSpaAvailableByDate);
 
 // router.delete('/', ctrl.deleteSpaByDate );

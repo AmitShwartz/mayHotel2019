@@ -39,6 +39,18 @@ exports.getSpaAvailableByDate = async (req, res) => {
   }
 }
 
+exports.getSpaAvailable = async (req, res) => {
+  try {
+    const { hotel } = req.params;
+
+    available = await Spa.find({ hotel, occupied: false}).sort({ 'int.time': 1 });
+
+    resSuccess(res, available);
+  } catch (err) {
+    resError(res, err.message);
+  }
+}
+
 exports.deletePast = async () => {
   try {
     let now = new Date();
