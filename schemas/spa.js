@@ -35,7 +35,7 @@ SpaSchema.statics.addAppointment = async (spa, user, treatment) => {
   return spa;
 }
 
-SpaSchema.statics.cancelAppointment = async function(spa, user) {
+SpaSchema.statics.cancelAppointment = async function (spa, user) {
   spa.user = null;
   spa.occupied = false;
   spa.treatment = null;
@@ -43,7 +43,7 @@ SpaSchema.statics.cancelAppointment = async function(spa, user) {
 
   user.spa = await user.spa.filter(
     item => item.appointment.toString() != spa._id.toString()
-    );
+  );
   await user.save();
 
   return spa;
@@ -51,11 +51,12 @@ SpaSchema.statics.cancelAppointment = async function(spa, user) {
 
 SpaSchema.pre('save', async function (next) {
   const spa = this;
-
-  spa.string.date = await moment(spa.date).format('DD/MM/YYYY');
-  spa.string.time = await moment(spa.date).format('HH:mm');
-  spa.int.time = await TIME_INT(spa.string.time);
-  spa.int.date = await DATE_INT(spa.date);
+  if (spa.isModified('date')) {
+    spa.string.date = await moment(spa.date).format('DD/MM/YYYY');
+    spa.string.time = await moment(spa.date).format('HH:mm');
+    spa.int.time = await TIME_INT(spa.string.time);
+    spa.int.date = await DATE_INT(spa.date);
+  }
   next()
 });
 

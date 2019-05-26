@@ -65,7 +65,7 @@ exports.addAppointment = async (req, res) => {
 
 exports.cancelAppointment = async (req, res) => {
   try {
-    
+
     const user = req.user;
     const spa = await Spa.findById(req.params.appointment_id);
     if (!spa) throw new Error('appointment not exist')
