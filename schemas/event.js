@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const moment = require('moment-timezone');
-const QRCode = require('qrcode');
-const _ = require('lodash');
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
@@ -27,6 +25,8 @@ const EventSchema = new Schema({
     _id: false
   }]
 }, { collection: 'events' });
+
+EventSchema.index({ date: 1, name: 1, hotel: 1 }, { unique: true }); //unique key
 
 EventSchema.statics.checkCounter = async (event_id, amount) => {
   const event = await Event.findById(event_id);
@@ -68,7 +68,6 @@ EventSchema.methods.listOutUser = async function (reservation_id) {
 EventSchema.pre('save', async function (next) {
   const event = this;
 
-  event.qrcode = await QRCode.toDataURL(event._id.toString());
   event.string.date = await moment(event.date).format('DD/MM/YYYY');
   event.string.time = await moment(event.date).format('HH:mm');
   next()
