@@ -6,7 +6,7 @@ router.post('/', ctrl.addSpa );
 router.post('/appointment', auth, ctrl.addAppointment );
 
 router.get('/:hotel/available', ctrl.getSpaAvailable );
-router.get('/available/:hotel/:date', ctrl.getSpaAvailableByDate);
+router.get('/:hotel/available/:date', ctrl.getSpaAvailableByDate);
 
 // router.delete('/', ctrl.deleteSpaByDate );
  router.delete('/appointment/:appointment_id', auth, ctrl.cancelAppointment );
