@@ -39,15 +39,9 @@ OrderSchema.statics.createOrder = async function (user, meal, date, tables, amou
     else if (amount > diff) throw new Error(`User ${user._id} can save only ${diff} seats`);
   }
 
-  const filterdTables = await tables.filter((table) => {
-    return table.orders.find(order => {
-      if (order.order.meal.toString() == meal._id.toString() && DATE_INT(order.order.date) == DATE_INT(date)) {
-        console.log(false)
-        return order;
-      } else {
-        return null;
-      }
-    });
+  const filterdTables = await tables.filter(async (table) => {
+    return await !table.orders.find(
+      order => order.order.meal.toString() == meal._id.toString() && DATE_INT(order.order.date) == DATE_INT(date))   
   });
   console.log(filterdTables)
   if (filterdTables.length === 0) return null;
@@ -73,10 +67,10 @@ OrderSchema.statics.createOrder = async function (user, meal, date, tables, amou
 OrderSchema.statics.removeOrder = async (user, table, order_id) => {
   const order = await Order.findById(order_id);
 
-  user.orders = await user.orders.filter(order => order.toString() == order_id.toString())
+  user.orders = await user.orders.filter(order => order.toString() !== order_id.toString())
   await user.save();
 
-  table.orders = await table.orders.filter(order => order.toString() == order_id.toString())
+  table.orders = await table.orders.filter(order => order.toString() !== order_id.toString())
   await table.save();
 
   const deleted = await order.remove();
