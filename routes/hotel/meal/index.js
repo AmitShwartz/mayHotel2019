@@ -12,11 +12,7 @@ router.get('/:hotel_id', ctrl.getMeals);
 
 router.delete('/:meal_id', ctrl.removeMeal);
 
-router.delete('/all', async (req, res) => {
-  ctrl.removeAllMeals(req.body)
-  .then(cb => resSuccess(res, cb))
-  .catch(err => resError(res, err));
-});
+router.delete('/all', ctrl.removeAllMeals);
 
 
 router.post('/enter', (req,res) => {

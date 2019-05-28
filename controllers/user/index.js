@@ -65,7 +65,7 @@ exports.getOrders = async (req, res) => {
     const user = req.user;
     await user.populate('orders.order').execPopulate();
 
-    resSuccess(res, user.reservations);
+    resSuccess(res, user.orders);
   } catch (err) {
     resError(res, err.message);
   }
