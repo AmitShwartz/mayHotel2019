@@ -3,6 +3,7 @@ const QRCode = require('qrcode');
 const moment = require('moment-timezone')
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
+const { DATE_INT } = require('../consts')
 
 
 const OrderSchema = new Schema({
@@ -38,29 +39,30 @@ OrderSchema.statics.createOrder = async function (user, meal, date, tables, amou
     else if (amount > diff) throw new Error(`User ${user._id} can save only ${diff} seats`);
   }
 
-  tables = await tables.filter(async(table) => {
-    await table.orders.forEach(order => {
-      if (order.order.meal.toString() == meal._id.toString() && order.order.date.toString() == date.toString()){
+  const filterdTables = await tables.filter((table) => {
+    return table.orders.find(order => {
+      if (order.order.meal.toString() == meal._id.toString() && DATE_INT(order.order.date) == DATE_INT(date)) {
         console.log(false)
-        return false;
+        return order;
+      } else {
+        return null;
       }
     });
-    return true
   });
-  console.log(tables)
-  if(tables.length ===0) return { voucher: { meal_id, date, user_id: user._id } };
+  console.log(filterdTables)
+  if (filterdTables.length === 0) return null;
 
   const newOrder = new Order({
     meal: meal._id,
     user: user._id,
-    table: tables[0]._id,
+    table: filterdTables[0]._id,
     date,
     amount
   });
   await newOrder.save();
 
-  tables[0].orders = await tables[0].orders.concat({ order: newOrder._id });
-  await tables[0].save();
+  filterdTables[0].orders = await filterdTables[0].orders.concat({ order: newOrder._id });
+  await filterdTables[0].save();
 
   user.orders = await user.orders.concat({ order: newOrder._id });
   await user.save();

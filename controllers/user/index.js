@@ -64,7 +64,10 @@ exports.getOrders = async (req, res) => {
   try {
     const user = req.user;
     await user.populate('orders.order').execPopulate();
-
+    await user.populate({
+      path:'orders.order.meal'
+    }).execPopulate();
+    
     resSuccess(res, user.orders);
   } catch (err) {
     resError(res, err.message);

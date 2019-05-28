@@ -22,7 +22,7 @@ exports.addMeal = async (req, res) => {
 
 exports.getMeals = async (req, res) => {
   try {
-    const meals = await Meal.find({ hotel: req.params.hotel_id });
+    const meals = await Meal.find({ hotel: req.params.hotel_id }).sort('int.startTime');
     resSuccess(res, meals)
   } catch (err) {
     resError(res, err.massage)

@@ -1,4 +1,4 @@
-const { resError, resSuccess } = require('../../../../consts');
+const { DATE_INT,resError, resSuccess } = require('../../../../consts');
 const moment = require('moment-timezone');
 const Meal = require('../../../../schemas/meal');
 const Table = require('../../../../schemas/table');
@@ -20,8 +20,9 @@ exports.addOrder = async (req, res) => {
       seats: { $gte: amount }
     }).populate('orders.order').sort('seats');
 
-    const order = await Order.createOrder(user, meal, date, tables, amount);
-    await order.populate('table meal').execPopulate();
+    let order = await Order.createOrder(user, meal, date, tables, amount);
+    if(order !== null ) await order.populate('table meal').execPopulate();
+    else order = { voucher: { meal_id: meal._id, date: DATE_INT(date), user_id: user._id } }
     resSuccess(res, order);
   } catch (err) {
     resError(res, err.message);
