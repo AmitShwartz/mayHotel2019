@@ -41,7 +41,7 @@ OrderSchema.statics.createOrder = async function (user, meal, date, tables, amou
 
   const filterdTables = await tables.filter(async (table) => {
     return await !table.orders.find(
-      order => order.order.meal.toString() == meal._id.toString() && DATE_INT(order.order.date) == DATE_INT(date))   
+      order => order.order.meal.toString() == meal._id.toString())   
   });
   console.log(filterdTables)
   if (filterdTables.length === 0) return null;
