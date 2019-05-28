@@ -68,8 +68,11 @@ EventSchema.methods.listOutUser = async function (reservation_id) {
 EventSchema.pre('save', async function (next) {
   const event = this;
 
-  event.string.date = await moment(event.date).format('DD/MM/YYYY');
-  event.string.time = await moment(event.date).format('HH:mm');
+  if (event.isModified('date')) {
+    event.string.date = await moment(event.date).format('DD/MM/YYYY');
+    event.string.time = await moment(event.date).format('HH:mm');
+  }
+
   next()
 });
 

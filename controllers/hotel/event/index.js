@@ -46,9 +46,10 @@ exports.addReservation = async (req, res) => {
   try {
     const { event_id, amount } = req.body;
     const user = await req.user.populate('room').execPopulate();
+    if (user.room.guest_amount < amount || amount <= 0) throw Error('Invalid amount.');
     const event = await Event.checkCounter(event_id, amount);
 
-    if (user.room.guest_amount < amount || amount <= 0) throw Error('Invalid amount.');
+    
 
     const reservation = await Reservation.addReservation(user, event, amount);
 

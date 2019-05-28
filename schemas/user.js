@@ -85,6 +85,13 @@ const UserSchema = new Schema({
     },
     _id: false
   }],
+  orders: [{
+    order: {type: objectID,
+      ref: 'Order',
+      required: true
+    },
+    _id: false
+  }],
   reservations: [{
     reservation: {
       type: objectID,

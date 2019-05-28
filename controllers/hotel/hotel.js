@@ -1,5 +1,5 @@
 const Hotel = require('../../schemas/hotel');
-const {resError, resSuccess} = require("../../consts");
+const { resError, resSuccess } = require("../../consts");
 
 exports.createHotel = async (req, res) => {
   try {
@@ -8,8 +8,8 @@ exports.createHotel = async (req, res) => {
 
     const token = await newHotel.generateAuthToken();
 
-    resSuccess(res, {hotel: newHotel, token});
-  }catch(err) {
+    resSuccess(res, { hotel: newHotel, token });
+  } catch (err) {
     resError(res, err.massage);
   }
 }
@@ -18,18 +18,28 @@ exports.login = async (req, res) => {
   try {
     const hotel = await Hotel.findByCredentials(req.body.name, req.body.password);
     const token = await hotel.generateAuthToken();
-    resSuccess(res, {hotel, token});
-  } catch(err) {
+    resSuccess(res, { hotel, token });
+  } catch (err) {
     resError(res, err.message);
   }
 }
 
 exports.logout = async (req, res) => {
   try {
-    req.hotel.token = null;
+    req.hotel.tokens = req.hotel.tokens.filter(token => token.token !== req.token);
     await req.hotel.save();
     resSuccess(res);
-  } catch(err) {
+  } catch (err) {
+    resError(res, err.message);
+  }
+}
+
+exports.logoutAll = async (req, res) => {
+  try {
+    req.hotel.tokens = [];
+    await req.hotel.save();
+    resSuccess(res);
+  } catch (err) {
     resError(res, err.message);
   }
 }

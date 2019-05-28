@@ -60,6 +60,17 @@ exports.getEvents = async (req, res) => {
   }
 };
 
+exports.getOrders = async (req, res) => {
+  try {
+    const user = req.user;
+    await user.populate('orders.order').execPopulate();
+
+    resSuccess(res, user.reservations);
+  } catch (err) {
+    resError(res, err.message);
+  }
+};
+
 exports.getVouchers = async (req, res) => {
   try {
     const user = req.user;

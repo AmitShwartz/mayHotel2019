@@ -1,6 +1,9 @@
 const router = require('express').Router();
 const {resError, resSuccess} = require("../../../consts");
 const ctrl = require('../../../controllers/hotel/meal');
+const orderRouter = require('../table/order/index')
+
+router.use('/orders', orderRouter);
 
 router.post('/', async (req, res) => {
   ctrl.addMeal(req)

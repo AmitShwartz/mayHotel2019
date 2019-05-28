@@ -11,8 +11,7 @@ router.post('/logoutAll', auth, ctrl.logoutAll ); // Done
 router.get('/me', auth, (req,res) => resSuccess(res, req.user)); // Done
 router.get('/me/vouchers', auth, ctrl.getVouchers); // Done
 router.get('/me/events', auth, ctrl.getEvents); // Done
-
-// Not done!
+router.get('/me/orders', auth, ctrl.getOrders); // Done
 router.get('/me/spa', auth, ctrl.getAppointments);
 
 
