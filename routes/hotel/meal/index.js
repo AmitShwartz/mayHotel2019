@@ -2,26 +2,15 @@ const router = require('express').Router();
 const {resError, resSuccess} = require("../../../consts");
 const ctrl = require('../../../controllers/hotel/meal');
 const orderRouter = require('../table/order/index')
+const hotelAuth = require('../../../middleware/hotelAuth')
 
 router.use('/orders', orderRouter);
 
-router.post('/', async (req, res) => {
-  ctrl.addMeal(req)
-  .then(meal => resSuccess(res, meal))
-  .catch(err => resError(res, err));
-});
+router.post('/', hotelAuth,ctrl.addMeal);
 
-router.get('/:hotel_id', (req, res) => {
-  ctrl.getMeals(req.params)
-  .then(meal => resSuccess(res, meal))
-  .catch(err => resError(res, err));
-});
+router.get('/:hotel_id', ctrl.getMeals);
 
-router.delete('/', async (req, res) => {
-  ctrl.removeMeal(req.body)
-  .then(cb => resSuccess(res, cb))
-  .catch(err => resError(res, err));
-});
+router.delete('/:meal_id', ctrl.removeMeal);
 
 router.delete('/all', async (req, res) => {
   ctrl.removeAllMeals(req.body)

@@ -22,7 +22,7 @@ exports.addMeal = async (req, res) => {
 
 exports.getMeals = async (req, res) => {
   try {
-    const meals = await Meal.find({ hotel: req.hotel._id });
+    const meals = await Meal.find({ hotel: req.params.hotel_id });
     resSuccess(res, meals)
   } catch (err) {
     resError(res, err.massage)
@@ -31,7 +31,7 @@ exports.getMeals = async (req, res) => {
 
 exports.removeMeal = async (req, res) => {
   try {
-    const meal = await Meal.findById(meal_id);
+    const meal = await Meal.findById(req.params.meal_id);
     await meal.remove();
     resSuccess(res, meal)
   } catch (err) {
