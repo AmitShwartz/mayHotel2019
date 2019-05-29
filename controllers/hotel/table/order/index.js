@@ -1,4 +1,4 @@
-const { DATE_INT,resError, resSuccess } = require('../../../../consts');
+const { DATE_INT, resError, resSuccess } = require('../../../../consts');
 const moment = require('moment-timezone');
 const Meal = require('../../../../schemas/meal');
 const Table = require('../../../../schemas/table');
@@ -7,7 +7,7 @@ const Order = require('../../../../schemas/order');
 exports.addOrder = async (req, res) => {
   try {
     const { meal_id, amount } = req.body;
-    const date = new Date(req.body.date);
+    const date = moment(req.body.date).format();
     const user = await req.user.populate('room').execPopulate();
 
     if (user.room.guest_amount < amount || amount <= 0) throw Error('Invalid amount.');
@@ -20,8 +20,8 @@ exports.addOrder = async (req, res) => {
       seats: { $gte: amount }
     }).populate('orders.order').sort('seats');
 
-    let order = await Order.createOrder(user, meal, date, tables, amount);
-    if(order !== null ) await order.populate('table meal').execPopulate();
+    let order = await Order.createOrder(user, meal_id, date, tables, amount);
+    if (order !== null) await order.populate('table meal').execPopulate();
     else order = { voucher: { meal_id: meal._id, date: DATE_INT(date), user_id: user._id } }
     resSuccess(res, order);
   } catch (err) {
@@ -46,7 +46,7 @@ exports.getAllOrders = async (req, res) => {
   try {
     let tables = await Table.find({ hotel: req.hotel._id }).populate('orders.order');
     if (tables.length === 0) resSuccess(res, orders);
-    
+
     resSuccess(res, tables);
   } catch (err) {
     resError(res, err.message);

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const QRCode = require('qrcode');
+const _ = require('lodash');
 const moment = require('moment-timezone')
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
@@ -22,41 +23,50 @@ const OrderSchema = new Schema({
 
 OrderSchema.index({ user: 1, meal: 1, date: 1 }, { unique: true });
 
-OrderSchema.statics.createOrder = async function (user, meal, date, tables, amount) {
-  const existingOrder = await Order.find({
-    meal: meal._id,
+OrderSchema.statics.createOrder = async function (user, meal_id, date, tables, amount) {
+  const existingOrders = await Order.find({
+    meal: meal_id,
     user: user._id,
     date
   });
 
-  if (existingOrder.length > 0) {
+  if (existingOrders.length > 0) {
     total = 0;
-    await existingOrder.forEach(order => {
+    await existingOrders.forEach(order => {
       total += order.amount;
     })
     const diff = user.room.guest_amount - total;
     if (diff == 0) throw new Error(`The guest reached maximum orders capacity`);
     else if (amount > diff) throw new Error(`User ${user._id} can save only ${diff} seats`);
   }
-
-  const filterdTables = await tables.filter(async (table) => {
-    return await !table.orders.find(
-      order => order.order.meal.toString() == meal._id.toString())   
-  });
-  console.log(filterdTables)
-  if (filterdTables.length === 0) return null;
+  var tableToOrder = null
+  var flag = true
+  await tables.forEach(async table => {
+    await table.orders.forEach(order => {
+      if (order.meal.toString() == meal_id && order.date == date) {
+        flag = false;
+        return;
+      }
+    })
+    if (flag == true) {
+      tableToOrder = table;
+      return;
+    }
+  })
+  if (tableToOrder == null) return null;
 
   const newOrder = new Order({
-    meal: meal._id,
+    meal: meal_id,
     user: user._id,
-    table: filterdTables[0]._id,
+    table: tableToOrder._id,
+    // table: filterdTables[0]._id,
     date,
     amount
   });
   await newOrder.save();
 
-  filterdTables[0].orders = await filterdTables[0].orders.concat({ order: newOrder._id });
-  await filterdTables[0].save();
+  tableToOrder.orders = await tableToOrder.orders.concat({ order: newOrder._id });
+  await tableToOrder.save();
 
   user.orders = await user.orders.concat({ order: newOrder._id });
   await user.save();

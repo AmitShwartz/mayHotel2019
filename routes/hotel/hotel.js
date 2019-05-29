@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const auth = require('../../middleware/hotelAuth');
+const hotelAuth = require('../../middleware/hotelAuth');
 const ctrl = require('../../controllers/hotel/hotel');
 
 const router_room = require('./room/room');
@@ -16,7 +16,7 @@ router.use("/spa", spaRouter);
 
 router.post('/', ctrl.createHotel);
 router.post('/login', ctrl.login);
-router.post('/logout', auth, ctrl.logout);
-router.post('/logoutAll', auth, ctrl.logoutAll);
+router.post('/logout', hotelAuth, ctrl.logout);
+router.post('/logoutAll', hotelAuth, ctrl.logoutAll);
 
 module.exports = router;
