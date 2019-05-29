@@ -27,6 +27,7 @@ findTable = async (tables, meal_id, date) => {
   var flag = true
   for (let i = 0; i < tables.length; i++) {
     for (let j = 0; j < tables[i].orders.length; j++) {
+      console.log(tables[i].orders[j].order)
       if (tables[i].orders[j].order.meal.toString() === meal_id && tables[i].orders[j].order.date.toString() === date.toString()) {
         flag = false;
       }
@@ -36,6 +37,7 @@ findTable = async (tables, meal_id, date) => {
     }
     flag = true;
   }
+  console.log('1')
   return null;
 }
 
@@ -55,7 +57,7 @@ OrderSchema.statics.createOrder = async function (user, meal_id, date, tables, a
     if (diff == 0) throw new Error(`The guest reached maximum orders capacity`);
     else if (amount > diff) throw new Error(`User ${user._id} can save only ${diff} seats`);
   }
-
+  console.log('2')
   tableToOrder = await findTable(tables, meal_id, date);
   if (tableToOrder == null) return null;
 
@@ -80,10 +82,10 @@ OrderSchema.statics.createOrder = async function (user, meal_id, date, tables, a
 OrderSchema.statics.removeOrder = async (user, table, order_id) => {
   const order = await Order.findById(order_id);
 
-  user.orders = await user.orders.filter(order => order.toString() !== order_id.toString())
+  user.orders = await user.orders.filter(order => order.order.toString() !== order_id.toString())
   await user.save();
 
-  table.orders = await table.orders.filter(order => order.toString() !== order_id.toString())
+  table.orders = await table.orders.filter(order => order.order.toString() !== order_id.toString())
   await table.save();
 
   const deleted = await order.remove();
