@@ -7,7 +7,7 @@ const Order = require('../../../../schemas/order');
 exports.addOrder = async (req, res) => {
   try {
     const { meal_id, amount } = req.body;
-    const date = moment(req.body.date).format();
+    const date = new Date(req.body.date)
     const user = await req.user.populate('room').execPopulate();
 
     if (user.room.guest_amount < amount || amount <= 0) throw Error('Invalid amount.');

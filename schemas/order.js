@@ -23,6 +23,22 @@ const OrderSchema = new Schema({
 
 OrderSchema.index({ user: 1, meal: 1, date: 1 }, { unique: true });
 
+findTable = async (tables, meal_id, date) => {
+  var flag = true
+  for (let i = 0; i < tables.length; i++) {
+    for (let j = 0; j < tables[i].orders.length; j++) {
+      if (tables[i].orders[j].order.meal.toString() === meal_id && tables[i].orders[j].order.date.toString() === date.toString()) {
+        flag = false;
+      }
+    }
+    if (flag) {
+      return tables[i];
+    }
+    flag = true;
+  }
+  return null;
+}
+
 OrderSchema.statics.createOrder = async function (user, meal_id, date, tables, amount) {
   const existingOrders = await Order.find({
     meal: meal_id,
@@ -39,27 +55,14 @@ OrderSchema.statics.createOrder = async function (user, meal_id, date, tables, a
     if (diff == 0) throw new Error(`The guest reached maximum orders capacity`);
     else if (amount > diff) throw new Error(`User ${user._id} can save only ${diff} seats`);
   }
-  var tableToOrder = null
-  var flag = true
-  await tables.forEach(async table => {
-    await table.orders.forEach(order => {
-      if (order.meal.toString() == meal_id && order.date == date) {
-        flag = false;
-        return;
-      }
-    })
-    if (flag == true) {
-      tableToOrder = table;
-      return;
-    }
-  })
+
+  tableToOrder = await findTable(tables, meal_id, date);
   if (tableToOrder == null) return null;
 
   const newOrder = new Order({
     meal: meal_id,
     user: user._id,
     table: tableToOrder._id,
-    // table: filterdTables[0]._id,
     date,
     amount
   });
@@ -91,7 +94,7 @@ OrderSchema.pre('save', async function (next) {
   const order = this;
 
   if (order.isModified('date')) {
-    order.string.date = await moment(order.date).format('DD/MM/YYYY');
+    order.string.date = await moment.utc(order.date).format('DD/MM/YYYY');
   }
   order.qrcode = await QRCode.toDataURL(order._id.toString());
   next()
