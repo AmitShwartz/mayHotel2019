@@ -5,6 +5,7 @@ const { DATE_INT, TIME_INT, resSuccess, resError } = require('../../../consts');
 
 exports.addEvent = async (req, res) => {
   try {
+    req.body.hotel = req.hotel._id;
     const newEvent = new Event(req.body);
     await newEvent.save();
     resSuccess(res, { event: newEvent });

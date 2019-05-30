@@ -33,18 +33,6 @@ exports.addVoucher = ({user_id, meal_id, date, value}) =>{
     });
 }
 
-// exports.getVouchersByUser = ({user_id}) =>{ 
-//     return new Promise((resolve, reject) =>{
-//         if(!user_id) return reject('user param is missing');
-//         console.log(user_id)
-//         User.findById(user_id).populate('Voucher').exec((err, user) =>{
-//             if(err) return reject(err);
-//             else if(!user) return reject(`user ${user_id} not exist`);
-//             resolve(user.vouchers);
-//         })
-//     });
-// }
-
 exports.completeVoucher = ({voucher}) =>{ 
     return new Promise((resolve, reject) =>{
         if(!voucher) return reject('voucher param is missing');

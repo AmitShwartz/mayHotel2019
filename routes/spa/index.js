@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const ctrl = require('../../controllers/hotel/spa');
 const auth = require('../../middleware/auth');
+const hotelAuth = require('../../middleware/hotelAuth');
 
-router.post('/', ctrl.addSpa );
+router.post('/', hotelAuth, ctrl.addSpa );
 router.post('/appointment', auth, ctrl.addAppointment );
 
 router.get('/:hotel/available', ctrl.getSpaAvailable );

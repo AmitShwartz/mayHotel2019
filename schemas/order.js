@@ -27,7 +27,7 @@ findTable = async (tables, meal_id, date) => {
   var flag = true
   for (let i = 0; i < tables.length; i++) {
     for (let j = 0; j < tables[i].orders.length; j++) {
-      console.log(tables[i].orders[j].order)
+      if(tables[i].orders[j].order==null) continue;
       if (tables[i].orders[j].order.meal.toString() === meal_id && tables[i].orders[j].order.date.toString() === date.toString()) {
         flag = false;
       }

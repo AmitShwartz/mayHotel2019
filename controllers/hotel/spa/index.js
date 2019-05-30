@@ -6,7 +6,8 @@ const { resSuccess, resError } = require('../../../consts');
 
 exports.addSpa = async (req, res) => {
   try {
-    const { therepist, hotel } = req.body;
+    const { therepist } = req.body;
+    const hotel = req.hotel;
     var dateVar = new Date(req.body.date);
     for (let i = 8; i < 19; i++) {
       if (i == 12) continue;

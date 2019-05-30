@@ -8,11 +8,18 @@ const Table = require('../../../schemas/table');
 
 exports.addMeal = async (req, res) => {
   try {
-    const newMeal = new Meal(body);
+    const { startTime, endTime, name } = req.body;
+    const newMeal = new Meal({
+      startTime,
+      endTime,
+      name,
+      hotel: req.hotel._id
+    })
     const meal = await newMeal.save();
+    console.log(meal)
 
     req.hotel.meals = await req.hotel.meals.concat({ meal: meal._id });
-    await req.meal.save();
+    await req.hotel.save();
 
     resSuccess(res, meal)
   } catch (err) {
@@ -68,7 +75,7 @@ exports.exit = async (req, res) => {
 //// need finish
 exports.enter = async (req, res) => {
   try {
-    const {user_id, hotel_id} = req.body;
+    const { user_id, hotel_id } = req.body;
     const user = await User.findById(user_id).populate('room').execPopulate();
     if (!user) throw new Error('invalid user id');
     else if (user.hotel == null) throw new Error(`user ${user_id} is not a guest`);

@@ -6,7 +6,7 @@ const hotelAuth = require('../../../middleware/hotelAuth')
 
 router.use('/orders', orderRouter);
 
-router.post('/', hotelAuth,ctrl.addMeal);
+router.post('/', hotelAuth, ctrl.addMeal);
 
 router.get('/:hotel_id', ctrl.getMeals);
 

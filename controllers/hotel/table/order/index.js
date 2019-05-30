@@ -14,7 +14,6 @@ exports.addOrder = async (req, res) => {
 
     const meal = await Meal.findById(meal_id);
     if (!meal) throw new Error('invalid meal');
-    console.log(meal)
     var tables = await Table.find({
       hotel: user.hotel,
       seats: { $gte: amount }
