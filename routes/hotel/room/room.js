@@ -12,7 +12,7 @@ router.post('/checkIn',hotelAuth,  ctrl.checkIn);
 
 router.get('/all',hotelAuth, ctrl.getAllRooms);
 router.get('/available',hotelAuth,ctrl.getAvailableRooms)
-router.get('/:room_id',hotelAuth, ctrl.getRoom);
+router.get('/:room_id', ctrl.getRoom);
 
 router.delete('/checkOut/:room_id',hotelAuth, ctrl.checkOut);
 
