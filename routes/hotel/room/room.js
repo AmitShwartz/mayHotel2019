@@ -14,7 +14,7 @@ router.get('/all',hotelAuth, ctrl.getAllRooms);
 router.get('/available',hotelAuth,ctrl.getAvailableRooms)
 router.get('/:room_id', ctrl.getRoom);
 
-router.delete('/checkOut/:room_id',hotelAuth, ctrl.checkOut);
+router.delete('/checkOut/:number',hotelAuth, ctrl.checkOut);
 
 
 // edit room
