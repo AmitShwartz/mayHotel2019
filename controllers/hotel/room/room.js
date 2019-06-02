@@ -64,8 +64,8 @@ exports.checkIn = async (req, res) => {
     if (!user) throw new Error('invalid user');
     const room = await Room.findOne({ hotel: req.hotel._id, number });
     if (!room) throw new Error('invalid room');
-    else if (room.user != null) return reject(`room ${room_id} already occupied`);
-    else if (room.capacity < guest_amount) return reject(`room ${room_id} max capacity is ${room.capacity}`);
+    else if (room.user != null) throw new Error(`room ${number} already occupied`);
+    else if (room.capacity < guest_amount) throw new Error(`room ${number} max capacity is ${room.capacity}`);
 
     room.user = user_id;
     room.guest_amount = guest_amount;
@@ -73,7 +73,7 @@ exports.checkIn = async (req, res) => {
     room.enddate = new Date(end_date);
     await room.save();
 
-    user.room = room_id;
+    user.room = room._id;
     user.hotel = room.hotel;
     await user.save();
     resSuccess(res, room)
@@ -85,7 +85,7 @@ exports.checkIn = async (req, res) => {
 exports.checkOut = async (req, res) => {
   try {
     const room = await Room.findOne({ hotel: req.hotel._id, number: req.params.number });
-    if (!room) throw new Error(`room_id: ${room_id} not exists)`);
+    if (!room) throw new Error('invalid room');
     else if (room.user == null) throw new Error(`room is already empty`);
 
     const user = await User.findById(room.user);
