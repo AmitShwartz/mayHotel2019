@@ -13,7 +13,7 @@ const ReservationSchema = new Schema({
 
 
 // done  need checking
-ReservationSchema.statics.addReservation = async (user, event, amount) => { 
+ReservationSchema.statics.addReservation = async (user, event, amount) => {
   const reservation = await Reservation.findOne({ user: user._id, event: event._id });
   if (!reservation) {
     const newReservation = new Reservation({ user: user._id, event: event._id, amount });
@@ -54,11 +54,13 @@ ReservationSchema.statics.removeReservation = async function (user, event, id) {
       return true;
     });
   await event.save();
+  console.log(event.reservations)
 
   user.reservations = await user.reservations.filter(
-    item => item.reservation.toString() !== id
+    item => item.reservation.toString() !== id.toString()
   );
   await user.save();
+  console.log(user.reservations)
 
   await reservation.remove();
   return reservation;

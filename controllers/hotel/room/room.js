@@ -59,7 +59,7 @@ exports.addRooms = async (req, res) => {
 
 exports.checkIn = async (req, res) => {
   try {
-    const { number, room_id, user_id, start_date, end_date, guest_amount } = req.body;
+    const { number, user_id, start_date, end_date, guest_amount } = req.body;
     const user = await User.findById(user_id);
     if (!user) throw new Error('invalid user');
     const room = await Room.findOne({ hotel: req.hotel._id, number });

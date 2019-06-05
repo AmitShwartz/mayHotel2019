@@ -7,6 +7,7 @@ router.post('/', hotelAuth, ctrl.addEvent);
 router.post('/reservation', auth, ctrl.addReservation);
 
 router.get('/one/:event_id', ctrl.getEvent);
+router.get('/reservations/:event_id', ctrl.getReservations);
 router.get('/:hotel_id', ctrl.getByHotel);
 
 router.delete('/:event_id', ctrl.deleteEvent);

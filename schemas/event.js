@@ -33,8 +33,6 @@ EventSchema.statics.checkCounter = async (event_id, amount) => {
   if (!event) throw Error(`Event ${event_id} not exist.`);
   const diff = event.capacity - event.counter;
 
-  console.log(`${diff} = ${event.capacity} - ${event.counter}`)
-
   if (diff == 0) throw Error(`Event ${event_id} at full capacity.`);
   else if (amount > diff) throw Error(`There is only ${diff} seats left in this event`);
 

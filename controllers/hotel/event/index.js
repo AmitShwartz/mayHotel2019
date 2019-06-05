@@ -13,6 +13,14 @@ exports.addEvent = async (req, res) => {
     resError(res, err.message);
   }
 }
+exports.getReservations = async (req, res) => {
+  try {
+    const reservations = await Reservation.find({ event: req.params.event_id }).populate('user','lastname firstname _id');
+    resSuccess(res, reservations);
+  } catch (err) {
+    resError(res, err.message);
+  }
+}
 
 exports.getEvent = async (req, res) => {
   try {
@@ -34,7 +42,12 @@ exports.getByHotel = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.body.event_id);
+    const event = await Event.findById(req.params.event_id);
+    if (!event) throw new Error('invalid event id')
+    const activeReservations = await Reservation.find({ event: req.params.event_id }).populate('user');
+    await activeReservations.map(async (reservation) => {
+      await Reservation.removeReservation(reservation.user, event, reservation._id)
+    });
     await event.remove();
     resSuccess(res, event);
   } catch (err) {
@@ -50,7 +63,7 @@ exports.addReservation = async (req, res) => {
     if (user.room.guest_amount < amount || amount <= 0) throw Error('Invalid amount.');
     const event = await Event.checkCounter(event_id, amount);
 
-    
+
 
     const reservation = await Reservation.addReservation(user, event, amount);
 
