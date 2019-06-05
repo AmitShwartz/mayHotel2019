@@ -10,7 +10,7 @@ router.get('/one/:event_id', ctrl.getEvent);
 router.get('/reservations/:event_id', hotelAuth, ctrl.getReservations);
 router.get('/:hotel_id', ctrl.getByHotel);
 
-router.delete('/:event_id', ctrl.deleteEvent);
+router.delete('/:event_id', hotelAuth, ctrl.deleteEvent);
 router.delete('/reservation/:reservation_id', auth, ctrl.cancelReservation);
 
 module.exports = router;
