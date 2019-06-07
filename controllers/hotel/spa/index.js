@@ -26,6 +26,19 @@ exports.addSpa = async (req, res) => {
   }
 };
 
+
+exports.getAllSpa = async (req, res) => {
+  try {
+    const date = await moment(req.params.date).format('DD/MM/YYYY');
+    console.log(date)
+    const spa = await Spa.find({ hotel:req.hotel._id, 'string.date': date }).populate('user').sort({ 'int.time': 1 });
+
+    resSuccess(res, spa);
+  } catch (err) {
+    resError(res, err.message);
+  }
+}
+
 exports.getSpaAvailableByDate = async (req, res) => {
   try {
     const { hotel } = req.params;
