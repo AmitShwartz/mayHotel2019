@@ -43,10 +43,9 @@ exports.deleteOrder = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    let tables = await Table.find({ hotel: req.hotel._id }).populate('orders.order');
-    if (tables.length === 0) resSuccess(res, orders);
+    const orders = await Order.find({ meal: req.params.meal_id });
 
-    resSuccess(res, tables);
+    resSuccess(res, orders);
   } catch (err) {
     resError(res, err.message);
   }
