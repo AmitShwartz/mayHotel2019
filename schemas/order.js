@@ -21,8 +21,6 @@ const OrderSchema = new Schema({
   qrcode: String
 }, { collation: 'orders' });
 
-OrderSchema.index({ user: 1, meal: 1, date: 1 }, { unique: true });
-
 findTable = async (tables, meal_id, date) => {
   var flag = true
   for (let i = 0; i < tables.length; i++) {
@@ -54,7 +52,7 @@ OrderSchema.statics.createOrder = async function (user, meal_id, date, tables, a
       total += order.amount;
     })
     const diff = user.room.guest_amount - total;
-    if (diff == 0) throw new Error(`The guest reached maximum orders capacity`);
+    if (diff == 0) return -1;
     else if (amount > diff) throw new Error(`User ${user._id} can save only ${diff} seats`);
   }
   console.log('2')

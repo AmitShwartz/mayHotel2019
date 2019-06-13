@@ -20,7 +20,9 @@ exports.addOrder = async (req, res) => {
     }).populate('orders.order').sort('seats');
 
     let order = await Order.createOrder(user, meal_id, date, tables, amount);
-    if (order !== null) await order.populate('table meal').execPopulate();
+    console.log(order)
+    if(order === -1) return resSuccess(res, {massage: 'אופס, ניצלת את כמות ההזמנות שביכולתך להזמין בכפוף לכמות האורחים שבחדר'});
+    else if (order !== null) await order.populate('table meal').execPopulate();
     else order = { voucher: { meal_id: meal._id, date: DATE_INT(date), user_id: user._id } }
     resSuccess(res, order);
   } catch (err) {
