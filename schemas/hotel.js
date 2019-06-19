@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const Schema = mongoose.Schema;
-const objectID = mongoose.Schema.Types.ObjectId;
 
 var HotelSchema = new Schema({
   name: { type: String, required: true },
@@ -16,38 +16,38 @@ var HotelSchema = new Schema({
     trim: true,
     minlength: 8
   },
-  events: [{
-    event: {
-      type: objectID,
-      ref: 'Event',
-      required: true
-    },
-    _id:false
-  }],
-  spa: [{
-    appointment: {
-      type: objectID,
-      ref: 'Spa',
-      required: true
-    },
-    _id:false
-  }],
-  meals: [{
-    meal: {
-      type: objectID,
-      ref: 'Meal',
-      required: true
-    },
-    _id:false
-  }],
-  rooms: [{
-    room: {
-      type: objectID,
-      ref: 'Room',
-      required: true
-    },
-    _id:false
-  }]
+  address: {
+    type: String,
+    required: true
+  },
+  phone: {
+    type: String,
+    required: true,
+    trim: true,
+    validate(value) {
+      if (!validator.isNumeric(value))
+        throw new Error('Phone is invalid')
+    }
+  },
+  fax: {
+    type: String,
+    required: true,
+    trim: true,
+    validate(value) {
+      if (!validator.isNumeric(value))
+        throw new Error('Phone is invalid')
+    }
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    validate(value) {
+      if (!validator.isEmail(value))
+        throw new Error('Email is invalid')
+    }
+  }
 }, { collection: 'hotels' });
 
 HotelSchema.index({ name: 1 }, { unique: true });

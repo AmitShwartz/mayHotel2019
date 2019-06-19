@@ -19,4 +19,6 @@ router.post('/login', ctrl.login);
 router.post('/logout', hotelAuth, ctrl.logout);
 router.post('/logoutAll', hotelAuth, ctrl.logoutAll);
 
+router.get('/:hotel_id', ctrl.getHotel);
+
 module.exports = router;

@@ -14,6 +14,15 @@ exports.createHotel = async (req, res) => {
   }
 }
 
+exports.getHotel = async (req, res) => {
+  try {
+    const hotel = await Hotel.findById(req.params.hotel_id);
+    resSuccess(res, hotel);
+  } catch (err) {
+    resError(res, err.massage);
+  }
+}
+
 exports.login = async (req, res) => {
   try {
     const hotel = await Hotel.findByCredentials(req.body.name, req.body.password);
